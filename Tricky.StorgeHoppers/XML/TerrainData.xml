@@ -5,91 +5,294 @@
     <Name>Extra Storage Hoppers</Name>
     <Values>
       <ValueEntry>
-          <Key>Tricky.MediumStorageHopper</Key>
-          <Name>Medium Storage Hopper</Name>
-          <Description>Stores 25 Items.\nAuto transfers.\nUse E to alter transfer type.</Description>
-        <IconName>Tricky.LightRed</IconName>
-      </ValueEntry>
-      <ValueEntry>
-        <Key>Tricky.SmallStorageHopper</Key>
-        <Name>Small Storage Hopper</Name>
-        <Description>Stores 10 Items.\nAuto transfers.\nUse E to alter transfer type.</Description>
-        <IconName>Tricky.LightBlue</IconName>
-      </ValueEntry>
-      <ValueEntry>
         <Key>Tricky.VoidHopper</Key>
         <Name>Void Hopper</Name>
-        <Description>Deletes Items!\nAuto transfers.\nUse E to alter transfer type.</Description>
+        <Description>Deletes Items! Great for handling the trash from the Quarry!\nAuto transfers.\nUse E to alter transfer type.</Description>
         <IconName>Tricky.Black</IconName>
       </ValueEntry>
-      <ValueEntry>
-        <Key>Tricky.HugeStorageHopper</Key>
-        <Name>Huge Storage Hopper</Name>
-        <Description>Stores 200 Items.\nAuto transfers.\nUse E to alter transfer type</Description>
-        <IconName>Tricky.Blue</IconName>
-      </ValueEntry>
+      <!-- ******************** Normal Storage Hoppers  ********************-->
+      <!-- Values may be customized. Previously created hoppers will always use the values at time of placement. -->
+      <!-- (Do not change XML Key tag or mod will break) -->
+      <!-- Tricky.MaxStore - Maximum Size. Cannot exceed 1000 on unless OT is set to 1.  -->
+      <!-- Tricky.ColorR - Red Color level (floating point value between 0 and 1)  -->
+      <!-- Tricky.ColorG - Green Color level (floating point value between 0 and 1)  -->
+      <!-- Tricky.ColorB - Blue Color level (floating point value between 0 and 1)  -->
+      <!-- Tricky.HopperName - Name of the hopper -->
+      <!-- Tricky.OT - False = normal hopper (1000 max), True = One Type Hopper (30000 max, stacking items only). -->
       <ValueEntry>
         <Key>Tricky.NanoStorageHopper</Key>
         <Name>Nano Storage Hopper</Name>
         <Description>Stores 1 Items.\nAuto transfers.\nUse E to alter transfer type</Description>
         <IconName>Tricky.Red</IconName>
+		<Custom>
+		    <Value key="Tricky.MaxStorage" value="1" />
+		    <Value key="Tricky.ColorR" value="1" />
+		    <Value key="Tricky.ColorG" value="0.1" />
+		    <Value key="Tricky.ColorB" value="0.1" />
+		    <Value key="Tricky.HopperName" value="Nano Storage Hopper" />
+		    <Value key="Tricky.OT" value="False" />
+		</Custom>
       </ValueEntry>
-      <ValueEntry>
-        <Key>Tricky.75SlotStorageHopper</Key>
-        <Name>75 Slot Storage Hopper</Name>
-        <Description>Stores 75 Items.\nAuto transfers.\nUse E to alter transfer type</Description>
-        <IconName>Tricky.LightGreen</IconName>
+	  <ValueEntry>
+        <Key>Tricky.SmallStorageHopper</Key>
+        <Name>Small Storage Hopper</Name>
+        <Description>Stores 10 Items.\nAuto transfers.\nUse E to alter transfer type.</Description>
+        <IconName>Tricky.LightBlue</IconName>
+		<Custom>
+		    <Value key="Tricky.MaxStorage" value="10" />
+		    <Value key="Tricky.ColorR" value="0.2" />
+		    <Value key="Tricky.ColorG" value="0.2" />
+		    <Value key="Tricky.ColorB" value="0.5" />
+		    <Value key="Tricky.HopperName" value="Small Storage Hopper" /> 
+		    <Value key="Tricky.OT" value="False" /> 
+		</Custom>
+      </ValueEntry>
+	  <ValueEntry>
+          <Key>Tricky.MediumStorageHopper</Key>
+          <Name>Medium Storage Hopper</Name>
+          <Description>Stores 25 Items.\nAuto transfers.\nUse E to alter transfer type.</Description>
+        <IconName>Tricky.LightRed</IconName>
+		<Custom>
+		    <Value key="Tricky.MaxStorage" value="25" />
+		    <Value key="Tricky.ColorR" value="0.5" />
+		    <Value key="Tricky.ColorG" value="0.2" />
+		    <Value key="Tricky.ColorB" value="0.2" />
+		    <Value key="Tricky.HopperName" value="Medium Storage Hopper" />
+		    <Value key="Tricky.OT" value="False" />
+		</Custom>
       </ValueEntry>
       <ValueEntry>
         <Key>Tricky.HalfStorageHopper</Key>
         <Name>Half Storage Hopper</Name>
         <Description>Stores 50 Items.\nAuto transfers.\nUse E to alter transfer type</Description>
         <IconName>Tricky.Yellow</IconName>
+		<Custom>
+		    <Value key="Tricky.MaxStorage" value="50" />
+		    <Value key="Tricky.ColorR" value="1" />
+		    <Value key="Tricky.ColorG" value="1" />
+		    <Value key="Tricky.ColorB" value="0.25" />
+		    <Value key="Tricky.HopperName" value="Half Storage Hopper" /> 
+		    <Value key="Tricky.OT" value="False" /> 
+		</Custom>
       </ValueEntry>
-      <ValueEntry>
+	  <ValueEntry>
+        <Key>Tricky.75SlotStorageHopper</Key>
+        <Name>75 Slot Storage Hopper</Name>
+        <Description>Stores 75 Items.\nAuto transfers.\nUse E to alter transfer type</Description>
+        <IconName>Tricky.LightGreen</IconName>
+		<Custom>
+		    <Value key="Tricky.MaxStorage" value="75" />
+		    <Value key="Tricky.ColorR" value="0.2" />
+		    <Value key="Tricky.ColorG" value="1" />
+		    <Value key="Tricky.ColorB" value="0.2" />
+		    <Value key="Tricky.HopperName" value="75 Slot Storage Hopper" /> 
+		    <Value key="Tricky.OT" value="False" /> 
+		</Custom>
+      </ValueEntry>
+	  <ValueEntry>
+        <Key>Tricky.100SlotStorageHopper</Key>
+        <Name>100 Slot Storage Hopper</Name>
+        <Description>Stores 100 Items.\nAuto transfers.\nUse E to alter transfer type</Description>
+        <IconName>StorageHopper</IconName>
+		    <Custom>
+			    <Value key="Tricky.MaxStorage" value="100" />
+			    <Value key="Tricky.ColorR" value="0.3" />
+			    <Value key="Tricky.ColorG" value="0.3" />
+			    <Value key="Tricky.ColorB" value="0.3" />
+			    <Value key="Tricky.HopperName" value="100 Slot Storage Hopper" /> 
+			    <Value key="Tricky.OT" value="False" /> 
+		    </Custom>
+      </ValueEntry>
+	  <ValueEntry>
         <Key>Tricky.125SlotStorageHopper</Key>
         <Name>125 Slot Storage Hopper</Name>
         <Description>Stores 125 Items.\nAuto transfers.\nUse E to alter transfer type</Description>
         <IconName>Tricky.Green</IconName>
+		<Custom>
+		    <Value key="Tricky.MaxStorage" value="125" />
+		    <Value key="Tricky.ColorR" value="0.2" />
+		    <Value key="Tricky.ColorG" value="0.5" />
+		    <Value key="Tricky.ColorB" value="0.2" />
+		    <Value key="Tricky.HopperName" value="125 Slot Storage Hopper" /> 
+		    <Value key="Tricky.OT" value="False" /> 
+		</Custom>
       </ValueEntry>
       <ValueEntry>
         <Key>Tricky.150SlotStorageHopper</Key>
         <Name>150 Slot Storage Hopper</Name>
         <Description>Stores 150 Items.\nAuto transfers.\nUse E to alter transfer type</Description>
-        <IconName>Tricky.Yellow</IconName>
+        <IconName>Tricky.LightPurple</IconName>
+		<Custom>
+		    <Value key="Tricky.MaxStorage" value="150" />
+		    <Value key="Tricky.ColorR" value="1" />
+		    <Value key="Tricky.ColorG" value="1" />
+		    <Value key="Tricky.ColorB" value="0.25" />
+		    <Value key="Tricky.HopperName" value="150 Slot Storage Hopper" /> 
+		    <Value key="Tricky.OT" value="False" /> 
+		</Custom>
+      </ValueEntry>
+      <ValueEntry>
+        <Key>Tricky.HugeStorageHopper</Key>
+        <Name>Huge Storage Hopper</Name>
+        <Description>Stores 200 Items.\nAuto transfers.\nUse E to alter transfer type</Description>
+        <IconName>Tricky.Blue</IconName>
+		<Custom>
+		    <Value key="Tricky.MaxStorage" value="200" />
+		    <Value key="Tricky.ColorR" value="0.1" />
+		    <Value key="Tricky.ColorG" value="0.1" />
+		    <Value key="Tricky.ColorB" value="1" />
+		    <Value key="Tricky.HopperName" value="Huge Storage Hopper" /> 
+		    <Value key="Tricky.OT" value="False" /> 
+		</Custom>
+      </ValueEntry>
+      <ValueEntry>
+        <Key>Tricky.500SlotStorageHopper</Key>
+        <Name>500 Slot Storage Hopper</Name>
+        <Description>Stores 500 Items.\nAuto transfers.\nUse E to alter transfer type</Description>
+        <IconName>Tricky.Purple</IconName>
+		<Custom>
+		    <Value key="Tricky.MaxStorage" value="500" />
+		    <Value key="Tricky.ColorR" value="1" />
+		    <Value key="Tricky.ColorG" value="0.5" />
+		    <Value key="Tricky.ColorB" value="0.5" />
+		    <Value key="Tricky.HopperName" value="500 Slot Storage Hopper" /> 
+		    <Value key="Tricky.OT" value="False" /> 
+		</Custom>
+      </ValueEntry>
+      <ValueEntry>
+        <Key>Tricky.750SlotStorageHopper</Key>
+        <Name>750 Slot Storage Hopper</Name>
+        <Description>Stores 750 Items.\nAuto transfers.\nUse E to alter transfer type</Description>
+        <IconName>Tricky.LightOrange</IconName>
+		<Custom>
+		    <Value key="Tricky.MaxStorage" value="750" />
+		    <Value key="Tricky.ColorR" value="0.9" />
+		    <Value key="Tricky.ColorG" value="0.6" />
+		    <Value key="Tricky.ColorB" value="0.15" />
+		    <Value key="Tricky.HopperName" value="750 Slot Storage Hopper" /> 
+		    <Value key="Tricky.OT" value="False" /> 
+		</Custom>
+      </ValueEntry>
+      <ValueEntry>
+        <Key>Tricky.1000SlotStorageHopper</Key>
+        <Name>1000 Slot Storage Hopper</Name>
+        <Description>Stores 1000 Items.\nAuto transfers.\nUse E to alter transfer type</Description>
+        <IconName>Tricky.Orange</IconName>
+		<Custom>
+		    <Value key="Tricky.MaxStorage" value="1000" />
+		    <Value key="Tricky.ColorR" value="0.75" />
+		    <Value key="Tricky.ColorG" value="0.45" />
+		    <Value key="Tricky.ColorB" value="0.5" />
+		    <Value key="Tricky.HopperName" value="1000 Slot Storage Hopper" /> 
+		    <Value key="Tricky.OT" value="False" /> 
+		</Custom>
+      </ValueEntry>
+      <!-- ******************** One-Type Storage Hoppers ******************** -->
+      <ValueEntry>
+        <Key>Tricky.500SlotHopperx</Key>
+        <Name>500 Slot One Type Storage Hopper</Name>
+        <Description>Stores 500 Items of the same type.\nAuto transfers.\nUse E to alter transfer type</Description>
+        <IconName>Tricky.RedOT</IconName>
+		<Custom>
+		    <Value key="Tricky.MaxStorage" value="500" />
+		    <Value key="Tricky.ColorR" value="1" />
+		    <Value key="Tricky.ColorG" value="1" />
+		    <Value key="Tricky.ColorB" value="1" />
+		    <Value key="Tricky.HopperName" value="500 Slot Storage Hopper" /> 
+		    <Value key="Tricky.OT" value="True" /> 
+		</Custom>
+      </ValueEntry>
+	  <ValueEntry>
+        <Key>Tricky.1000SlotHopperx</Key>
+        <Name>1000 Slot One Type Storage Hopper</Name>
+        <Description>Stores 1000 Items of the same type.\nAuto transfers.\nUse E to alter transfer type</Description>
+        <IconName>Tricky.YellowOT</IconName>
+		<Custom>
+		    <Value key="Tricky.MaxStorage" value="1000" />
+		    <Value key="Tricky.ColorR" value="1" />
+		    <Value key="Tricky.ColorG" value="1" />
+		    <Value key="Tricky.ColorB" value="0.25" />
+		    <Value key="Tricky.HopperName" value="1000 Slot Storage Hopper" /> 
+		    <Value key="Tricky.OT" value="True" /> 
+		</Custom>
       </ValueEntry>
 	  <ValueEntry>
         <Key>Tricky.2000SlotHopperx</Key>
         <Name>2000 Slot One Type Storage Hopper</Name>
         <Description>Stores 2000 Items of the same type.\nAuto transfers.\nUse E to alter transfer type</Description>
-        <IconName>Tricky.Yellow</IconName>
+        <IconName>Tricky.GreenOT</IconName>
+		<Custom>
+		    <Value key="Tricky.MaxStorage" value="2000" />
+		    <Value key="Tricky.ColorR" value="1" />
+		    <Value key="Tricky.ColorG" value="1" />
+		    <Value key="Tricky.ColorB" value="0.25" />
+		    <Value key="Tricky.HopperName" value="2000 Slot Storage Hopper" /> 
+		    <Value key="Tricky.OT" value="True" /> 
+		</Custom>
       </ValueEntry>
-      <ValueEntry>
-        <Key>Tricky.1000SlotHopperx</Key>
-        <Name>1000 Slot One Type Storage Hopper</Name>
-        <Description>Stores 1000 Items of the same type.\nAuto transfers.\nUse E to alter transfer type</Description>
-        <IconName>Tricky.LightYellow</IconName>
+	  <ValueEntry>
+        <Key>Tricky.3000SlotHopperx</Key>
+        <Name>3000 Slot One Type Storage Hopper</Name>
+        <Description>Stores 2000 Items of the same type.\nAuto transfers.\nUse E to alter transfer type</Description>
+	    <IconName>Tricky.BlueOT</IconName>
+		<Custom>
+		    <Value key="Tricky.MaxStorage" value="3000" />
+		    <Value key="Tricky.ColorR" value="0.1" />
+		    <Value key="Tricky.ColorG" value="0.2" />
+		    <Value key="Tricky.ColorB" value="1" />
+		    <Value key="Tricky.HopperName" value="3000 Slot Storage Hopper" /> 
+		    <Value key="Tricky.OT" value="True" /> 
+		</Custom>
       </ValueEntry>
-      <ValueEntry>
-        <Key>Tricky.500SlotHopperx</Key>
-        <Name>500 Slot One Type Storage Hopper</Name>
-        <Description>Stores 500 Items of the same type.\nAuto transfers.\nUse E to alter transfer type</Description>
+	  <ValueEntry>
+        <Key>Tricky.5000SlotHopperx</Key>
+        <Name>5000 Slot One Type Storage Hopper</Name>
+        <Description>Stores 5000 Items of the same type.\nAuto transfers.\nUse E to alter transfer type</Description>
+	    <IconName>Tricky.PurpleOT</IconName>
+		<Custom>
+		    <Value key="Tricky.MaxStorage" value="5000" />
+		    <Value key="Tricky.ColorR" value="1" />
+		    <Value key="Tricky.ColorG" value="0.1" />
+		    <Value key="Tricky.ColorB" value="1" />
+		    <Value key="Tricky.HopperName" value="5000 Slot Storage Hopper" /> 
+		    <Value key="Tricky.OT" value="True" /> 
+		</Custom>
+      </ValueEntry>
+      <!-- ******************** Custom Hoppers ******************** -->
+	  <ValueEntry>
+        <Key>Tricky.CustomHopper</Key>
+        <Name>CustomHopper</Name>
+        <Description>Stores 100 Items of the same type.\nAuto transfers.\nUse E to alter transfer type</Description>
         <IconName>LogisticsHopper</IconName>
+		    <Custom>
+			    <Value key="Tricky.MaxStorage" value="100" />
+			    <Value key="Tricky.ColorR" value="1" />
+			    <Value key="Tricky.ColorG" value="1" />
+			    <Value key="Tricky.ColorB" value="1" />
+			    <Value key="Tricky.HopperName" value="Custom Storage Hopper" /> 
+			    <Value key="Tricky.OT" value="False" /> 
+		    </Custom>
       </ValueEntry>
     </Values>
 	<MaxStack>100</MaxStack>
     <LayerType>PrimaryTerrain</LayerType>
-    <TopTexture>182</TopTexture>
-    <GUITexture>182</GUITexture>
-    <isSolid>false</isSolid>
-    <isTransparent>true</isTransparent>
-    <isHollow>false</isHollow>
-    <isGlass>false</isGlass>
-    <isPassable>false</isPassable>
-    <hasObject>true</hasObject>
-    <hasEntity>true</hasEntity>
-    <AudioWalkType>Metal</AudioWalkType>
-    <AudioBuildType>Dirt</AudioBuildType>
-    <AudioDestroyType>None</AudioDestroyType>
+		<TopTexture>182</TopTexture>
+		<SideTexture>182</SideTexture>
+		<BottomTexture>182</BottomTexture>
+		<GUITexture>182</GUITexture>
+		<isSolid>false</isSolid>
+		<isTransparent>true</isTransparent>
+		<isHollow>false</isHollow>
+		<isGlass>false</isGlass>
+		<isPassable>false</isPassable>
+		<hasObject>true</hasObject>
+		<hasEntity>true</hasEntity>
+		<Category>Machine</Category>
+		<AudioWalkType>Metal</AudioWalkType>
+		<AudioBuildType>Dirt</AudioBuildType>
+		<AudioDestroyType>None</AudioDestroyType>
+		<tags>
+			<tag>Machinery</tag>
+		</tags>
   </TerrainDataEntry>
 </ArrayOfTerrainDataEntry>

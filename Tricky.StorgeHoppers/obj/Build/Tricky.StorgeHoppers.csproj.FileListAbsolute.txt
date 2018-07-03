@@ -12,3 +12,16 @@ C:\Users\Tricky\Documents\Visual Studio 2015\Projects\Tricky.StorgeHoppers\Trick
 C:\Users\Tricky\Documents\Visual Studio 2015\Projects\Tricky.StorgeHoppers\Tricky.StorgeHoppers\bin\Build\Machines\ExtraStorageHopper.cs
 C:\Users\Tricky\Documents\Visual Studio 2015\Projects\Tricky.StorgeHoppers\Tricky.StorgeHoppers\bin\Build\UnityEngine.xml
 C:\Users\Tricky\Documents\Visual Studio 2015\Projects\Tricky.StorgeHoppers\Tricky.StorgeHoppers\bin\Build\Assembly-CSharp.dll
+C:\Code\Tricky.StorgeHoppers.git\branches\V9\Tricky.StorgeHoppers\bin\Build\Machines\ExtraStorageHopper.cs
+C:\Code\Tricky.StorgeHoppers.git\branches\V9\Tricky.StorgeHoppers\bin\Build\plugin_Tricky.ExtraStorgeHoppers.dll
+C:\Code\Tricky.StorgeHoppers.git\branches\V9\Tricky.StorgeHoppers\bin\Build\UnityEngine.UI.dll
+C:\Code\Tricky.StorgeHoppers.git\branches\V9\Tricky.StorgeHoppers\bin\Build\Assembly-CSharp-firstpass.dll
+C:\Code\Tricky.StorgeHoppers.git\branches\V9\Tricky.StorgeHoppers\bin\Build\Ionic.Zip.dll
+C:\Code\Tricky.StorgeHoppers.git\branches\V9\Tricky.StorgeHoppers\bin\Build\Assembly-UnityScript-firstpass.dll
+C:\Code\Tricky.StorgeHoppers.git\branches\V9\Tricky.StorgeHoppers\bin\Build\Boo.Lang.dll
+C:\Code\Tricky.StorgeHoppers.git\branches\V9\Tricky.StorgeHoppers\bin\Build\UnityScript.Lang.dll
+C:\Code\Tricky.StorgeHoppers.git\branches\V9\Tricky.StorgeHoppers\bin\Build\UnityEngine.xml
+C:\Code\Tricky.StorgeHoppers.git\branches\V9\Tricky.StorgeHoppers\obj\Build\Tricky.StorgeHoppers.csprojAssemblyReference.cache
+C:\Code\Tricky.StorgeHoppers.git\branches\V9\Tricky.StorgeHoppers\obj\Build\Tricky.StorgeHoppers.csproj.CoreCompileInputs.cache
+C:\Code\Tricky.StorgeHoppers.git\branches\V9\Tricky.StorgeHoppers\obj\Build\Tricky.StorgeHoppers.csproj.CopyComplete
+C:\Code\Tricky.StorgeHoppers.git\branches\V9\Tricky.StorgeHoppers\obj\Build\plugin_Tricky.ExtraStorgeHoppers.dll

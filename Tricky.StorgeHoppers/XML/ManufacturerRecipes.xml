@@ -1,308 +1,473 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ArrayOfCraftData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <CraftData>
-    <Key>Tricky.VoidHopper</Key>
-    <Category>logistics</Category>
-    <Tier>0</Tier>
-    <CraftedKey>Tricky.VoidHopper</CraftedKey>
-    <CraftedAmount>1</CraftedAmount>
-    <Costs>
-      <CraftCost>
-        <Key>TitaniumBar</Key>
-        <Amount>250</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>NickelBar</Key>
-        <Amount>225</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>GoldBar</Key>
-        <Amount>250</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>Tricky.HugeStorageHopper</Key>
-        <Amount>2</Amount>
-      </CraftCost>
-    </Costs>
-    <Description>Deletes Items faster then you can blink! Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
-    <Hint>Can be connected to other machines for automation.</Hint>
-  </CraftData>
+  <!--******************** Normal Storage Hoppers ********************-->
   <CraftData>
     <Key>Tricky.NanoStorageHopper</Key>
-    <Category>logistics</Category>
+    <Category>storage</Category>
     <Tier>0</Tier>
     <CraftedKey>Tricky.NanoStorageHopper</CraftedKey>
     <CraftedAmount>1</CraftedAmount>
     <Costs>
       <CraftCost>
         <Key>TinBar</Key>
-        <Amount>4</Amount>
+        <Amount>2</Amount>
       </CraftCost>
       <CraftCost>
         <Key>CopperBar</Key>
         <Amount>2</Amount>
       </CraftCost>
-      <CraftCost>
-        <Key>IronBar</Key>
-        <Amount>2</Amount>
-      </CraftCost>
     </Costs>
-    <Description>Stores 1 resource and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
+    <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
     <Hint>Can be connected to other machines for automation.</Hint>
   </CraftData>
   <CraftData>
     <Key>Tricky.SmallStorageHopper</Key>
-    <Category>logistics</Category>
+    <Category>storage</Category>
     <Tier>0</Tier>
     <CraftedKey>Tricky.SmallStorageHopper</CraftedKey>
     <CraftedAmount>1</CraftedAmount>
     <Costs>
       <CraftCost>
         <Key>TinBar</Key>
-        <Amount>18</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>IronBar</Key>
-        <Amount>12</Amount>
+        <Amount>2</Amount>
       </CraftCost>
       <CraftCost>
         <Key>CopperBar</Key>
-        <Amount>8</Amount>
+        <Amount>2</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>PrimaryUpgradeModule</Key>
+        <Amount>1</Amount>
       </CraftCost>
     </Costs>
-    <Description>Stores up to 10 resources and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
+    <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
     <Hint>Can be connected to other machines for automation.</Hint>
   </CraftData>
   <CraftData>
     <Key>Tricky.MediumStorageHopper</Key>
-    <Category>logistics</Category>
+    <Category>storage</Category>
     <Tier>0</Tier>
     <CraftedKey>Tricky.MediumStorageHopper</CraftedKey>
     <CraftedAmount>1</CraftedAmount>
     <Costs>
       <CraftCost>
-        <Key>TinBar</Key>
-        <Amount>25</Amount>
+        <Key>LightWeightMachineHousing</Key>
+        <Amount>1</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>IronBar</Key>
-        <Amount>15</Amount>
+        <Key>IronGear</Key>
+        <Amount>2</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>CopperBar</Key>
-        <Amount>10</Amount>
+        <Key>PrimaryUpgradeModule</Key>
+        <Amount>1</Amount>
       </CraftCost>
     </Costs>
-    <Description>Stores up to 25 resources and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
+    <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
     <Hint>Can be connected to other machines for automation.</Hint>
   </CraftData>
   <CraftData>
     <Key>Tricky.HalfStorageHopper</Key>
-    <Category>logistics</Category>
-    <Tier>0</Tier>
+    <Category>storage</Category>
+    <Tier>1</Tier>
     <CraftedKey>Tricky.HalfStorageHopper</CraftedKey>
     <CraftedAmount>1</CraftedAmount>
     <Costs>
       <CraftCost>
-        <Key>TinBar</Key>
-        <Amount>30</Amount>
+        <Key>LightWeightMachineHousing</Key>
+        <Amount>2</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>CopperBar</Key>
-        <Amount>25</Amount>
+        <Key>IronGear</Key>
+        <Amount>5</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>IronBar</Key>
-        <Amount>25</Amount>
+        <Key>PrimaryUpgradeModule</Key>
+        <Amount>1</Amount>
       </CraftCost>
     </Costs>
-    <Description>Stores up to 50 resources and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
+    <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
     <Hint>Can be connected to other machines for automation.</Hint>
   </CraftData>
   <CraftData>
     <Key>Tricky.75SlotStorageHopper</Key>
-    <Category>logistics</Category>
-    <Tier>0</Tier>
+    <Category>storage</Category>
+    <Tier>1</Tier>
     <CraftedKey>Tricky.75SlotStorageHopper</CraftedKey>
     <CraftedAmount>1</CraftedAmount>
     <Costs>
       <CraftCost>
-        <Key>TinBar</Key>
-        <Amount>35</Amount>
+        <Key>LightWeightMachineHousing</Key>
+        <Amount>2</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>CopperBar</Key>
-        <Amount>30</Amount>
+        <Key>IronGear</Key>
+        <Amount>7</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>IronBar</Key>
-        <Amount>30</Amount>
+        <Key>PrimaryUpgradeModule</Key>
+        <Amount>1</Amount>
       </CraftCost>
     </Costs>
-    <Description>Stores up to 75 resources and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
+    <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
     <Hint>Can be connected to other machines for automation.</Hint>
   </CraftData>
-
+  <CraftData>
+    <Key>Tricky.100SlotStorageHopper</Key>
+    <Category>storage</Category>
+    <Tier>1</Tier>
+    <CraftedKey>Tricky.100SlotStorageHopper</CraftedKey>
+    <CraftedAmount>1</CraftedAmount>
+    <Costs>
+      <CraftCost>
+        <Key>LightWeightMachineHousing</Key>
+        <Amount>2</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>IronGear</Key>
+        <Amount>10</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>PrimaryUpgradeModule</Key>
+        <Amount>1</Amount>
+      </CraftCost>
+    </Costs>
+    <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
+    <Hint>Can be connected to other machines for automation.</Hint>
+  </CraftData>
   <CraftData>
     <Key>Tricky.125SlotStorageHopper</Key>
-    <Category>logistics</Category>
-    <Tier>0</Tier>
+    <Category>storage</Category>
+    <Tier>3</Tier>
     <CraftedKey>Tricky.125SlotStorageHopper</CraftedKey>
     <CraftedAmount>1</CraftedAmount>
     <Costs>
       <CraftCost>
-        <Key>TitaniumBar</Key>
-        <Amount>45</Amount>
+        <Key>TitaniumPlate</Key>
+        <Amount>5</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>NickelBar</Key>
-        <Amount>28</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>GoldBar</Key>
-        <Amount>18</Amount>
+        <Key>FortifiedPCB</Key>
+        <Amount>3</Amount>
       </CraftCost>
       <CraftCost>
         <Key>StorageHopper</Key>
         <Amount>1</Amount>
       </CraftCost>
     </Costs>
-    <Description>Stores up to 125 resources and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
+    <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
     <Hint>Can be connected to other machines for automation.</Hint>
   </CraftData>
   <CraftData>
     <Key>Tricky.150SlotStorageHopper</Key>
-    <Category>logistics</Category>
-    <Tier>0</Tier>
+    <Category>storage</Category>
+    <Tier>3</Tier>
     <CraftedKey>Tricky.150SlotStorageHopper</CraftedKey>
     <CraftedAmount>1</CraftedAmount>
     <Costs>
       <CraftCost>
-        <Key>TitaniumBar</Key>
-        <Amount>55</Amount>
+        <Key>TitaniumPlate</Key>
+        <Amount>10</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>NickelBar</Key>
-        <Amount>25</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>GoldBar</Key>
-        <Amount>15</Amount>
+        <Key>FortifiedPCB</Key>
+        <Amount>5</Amount>
       </CraftCost>
       <CraftCost>
         <Key>StorageHopper</Key>
         <Amount>1</Amount>
       </CraftCost>
     </Costs>
-    <Description>Stores up to 150 resources and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
+    <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
     <Hint>Can be connected to other machines for automation.</Hint>
   </CraftData>
   <CraftData>
     <Key>Tricky.HugeStorageHopper</Key>
-    <Category>logistics</Category>
+    <Category>storage</Category>
     <Tier>0</Tier>
     <CraftedKey>Tricky.HugeStorageHopper</CraftedKey>
     <CraftedAmount>1</CraftedAmount>
     <Costs>
       <CraftCost>
-        <Key>TitaniumBar</Key>
-        <Amount>75</Amount>
+        <Key>TitaniumPlate</Key>
+        <Amount>20</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>NickelBar</Key>
-        <Amount>40</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>GoldBar</Key>
-        <Amount>25</Amount>
+        <Key>FortifiedPCB</Key>
+        <Amount>10</Amount>
       </CraftCost>
       <CraftCost>
         <Key>StorageHopper</Key>
         <Amount>2</Amount>
       </CraftCost>
     </Costs>
-    <Description>Stores up to 200 resources and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
+    <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
     <Hint>Can be connected to other machines for automation.</Hint>
   </CraftData>
+  <!-- ******************** T4 Storage Hoppers ********************-->
   <CraftData>
-    <Key>Tricky.500SlotHopper</Key>
-    <Category>logistics</Category>
-    <Tier>0</Tier>
-    <CraftedKey>Tricky.500SlotHopper</CraftedKey>
+    <Key>Tricky.500SlotStorageHopper</Key>
+    <Category>storage</Category>
+    <Tier>4</Tier>
+    <CraftedKey>Tricky.500SlotStorageHopper</CraftedKey>
     <CraftedAmount>1</CraftedAmount>
     <Costs>
+      <CraftCost>
+        <Key>ChromedMachineBlock</Key>
+        <Amount>10</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>MagneticMachineBlock</Key>
+        <Amount>10</Amount>
+      </CraftCost>
       <CraftCost>
         <Key>Tricky.HugeStorageHopper</Key>
         <Amount>2</Amount>
       </CraftCost>
-      <CraftCost>
-        <Key>TitaniumBar</Key>
-        <Amount>100</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>NickelBar</Key>
-        <Amount>100</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>GoldBar</Key>
-        <Amount>100</Amount>
-      </CraftCost>
     </Costs>
-    <Description>Stores up to 2000 resources and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
+    <ResearchRequirements>
+      <Research>T4_start</Research>
+    </ResearchRequirements>
+    <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
     <Hint>Can be connected to other machines for automation.</Hint>
   </CraftData>
-    <CraftData>
-    <Key>Tricky.1000SlotHopper</Key>
-    <Category>logistics</Category>
-    <Tier>0</Tier>
-    <CraftedKey>Tricky.1000SlotHopper</CraftedKey>
+  <CraftData>
+    <Key>Tricky.750SlotStorageHopper</Key>
+    <Category>storage</Category>
+    <Tier>4</Tier>
+    <CraftedKey>Tricky.750SlotStorageHopper</CraftedKey>
     <CraftedAmount>1</CraftedAmount>
     <Costs>
       <CraftCost>
-        <Key>Tricky.500SlotHopper</Key>
-        <Amount>2</Amount>
+        <Key>ChromedMachineBlock</Key>
+        <Amount>15</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>TitaniumBar</Key>
-        <Amount>250</Amount>
+        <Key>MagneticMachineBlock</Key>
+        <Amount>15</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>NickelBar</Key>
-        <Amount>250</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>GoldBar</Key>
-        <Amount>250</Amount>
+        <Key>Tricky.500SlotStorageHopper</Key>
+        <Amount>1</Amount>
       </CraftCost>
     </Costs>
-    <Description>Stores up to 2000 resources and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
+    <ResearchRequirements>
+      <Research>T4_start</Research>
+    </ResearchRequirements>
+    <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
     <Hint>Can be connected to other machines for automation.</Hint>
   </CraftData>
-    <CraftData>
-    <Key>Tricky.2000SlotHopper</Key>
-    <Category>logistics</Category>
-    <Tier>0</Tier>
-    <CraftedKey>Tricky.2000SlotHopper</CraftedKey>
+  <CraftData>
+    <Key>Tricky.1000SlotStorageHopper</Key>
+    <Category>storage</Category>
+    <Tier>4</Tier>
+    <CraftedKey>Tricky.1000SlotStorageHopper</CraftedKey>
     <CraftedAmount>1</CraftedAmount>
     <Costs>
       <CraftCost>
-        <Key>Tricky.1000SlotHopper</Key>
-        <Amount>2</Amount>
+        <Key>ChromedMachineBlock</Key>
+        <Amount>20</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>TitaniumBar</Key>
-        <Amount>450</Amount>
+        <Key>MagneticMachineBlock</Key>
+        <Amount>20</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>NickelBar</Key>
-        <Amount>450</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>GoldBar</Key>
-        <Amount>450</Amount>
+        <Key>Tricky.750SlotStorageHopper</Key>
+        <Amount>1</Amount>
       </CraftCost>
     </Costs>
-    <Description>Stores up to 2000 resources and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
+    <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
+    <Hint>Can be connected to other machines for automation.</Hint>
+    <ResearchRequirements>
+      <Research>T4_start</Research>
+    </ResearchRequirements>
+  </CraftData>
+  <!-- ******************** Void Hopper ********************-->
+    <CraftData>
+    <Key>Tricky.VoidHopper</Key>
+    <Category>storage</Category>
+    <Tier>3</Tier>
+    <CraftedKey>Tricky.VoidHopper</CraftedKey>
+    <CraftedAmount>1</CraftedAmount>
+    <Costs>
+      <CraftCost>
+        <Key>TitaniumPlate</Key>
+        <Amount>150</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>FortifiedPCB</Key>
+        <Amount>100</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>GoldWire</Key>
+        <Amount>100</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>Tricky.HugeStorageHopper</Key>
+        <Amount>2</Amount>
+      </CraftCost>
+    </Costs>
+    <Description>Deletes Items faster then you can blink! Great for handling waste from quarry or Organic drops. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
+    <Hint>Can be connected to other machines for automation.</Hint>
+  </CraftData>
+  <!-- ******************** OT storage hoppers ********************-->
+  <CraftData>
+    <Key>Tricky.500SlotHopperx</Key>
+    <Category>storage</Category>
+    <Tier>3</Tier>
+    <CraftedKey>Tricky.500SlotHopperx</CraftedKey>
+    <CraftedAmount>1</CraftedAmount>
+    <Costs>
+      <CraftCost>
+        <Key>Tricky.HugeStorageHopper</Key>
+        <Amount>1</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>TitaniumPlate</Key>
+        <Amount>10</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>FortifiedPCB</Key>
+        <Amount>20</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>GoldWire</Key>
+        <Amount>15</Amount>
+      </CraftCost>
+    </Costs>
+    <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
+    <Hint>Can be connected to other machines for automation.</Hint>
+  </CraftData>
+    <CraftData>
+    <Key>Tricky.1000SlotHopperx</Key>
+    <Category>storage</Category>
+    <Tier>3</Tier>
+    <CraftedKey>Tricky.1000SlotHopperx</CraftedKey>
+    <CraftedAmount>1</CraftedAmount>
+    <Costs>
+      <CraftCost>
+        <Key>Tricky.500SlotHopperx</Key>
+        <Amount>1</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>TitaniumPlate</Key>
+        <Amount>10</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>FortifiedPCB</Key>
+        <Amount>20</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>GoldWire</Key>
+        <Amount>15</Amount>
+      </CraftCost>
+    </Costs>
+    <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
+    <Hint>Can be connected to other machines for automation.</Hint>
+  </CraftData>
+    <CraftData>
+    <Key>Tricky.2000SlotHopperx</Key>
+    <Category>storage</Category>
+    <Tier>0</Tier>
+    <CraftedKey>Tricky.2000SlotHopperx</CraftedKey>
+    <CraftedAmount>1</CraftedAmount>
+    <Costs>
+      <CraftCost>
+        <Key>Tricky.1000SlotHopperx</Key>
+        <Amount>1</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>TitaniumPlate</Key>
+        <Amount>10</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>FortifiedPCB</Key>
+        <Amount>20</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>GoldWire</Key>
+        <Amount>15</Amount>
+      </CraftCost>
+    </Costs>
+    <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
+    <Hint>Can be connected to other machines for automation.</Hint>
+  </CraftData>
+	<!--******************** T4 OT hoppers ********************-->
+  <CraftData>
+    <Key>Tricky.3000SlotHopperx</Key>
+    <Category>storage</Category>
+    <Tier>4</Tier>
+    <CraftedKey>Tricky.3000SlotHopperx</CraftedKey>
+    <CraftedAmount>1</CraftedAmount>
+    <Costs>
+      <CraftCost>
+        <Key>ChromedMachineBlock</Key>
+        <Amount>20</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>MagneticMachineBlock</Key>
+        <Amount>20</Amount>
+      </CraftCost>
+      <CraftCost>
+      <Key>Tricky.2000SlotHopperx</Key>
+      <Amount>1</Amount>
+    </CraftCost>
+    </Costs>
+    <ResearchRequirements>
+      <Research>T4_start</Research>
+    </ResearchRequirements>
+    <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
+    <Hint>Can be connected to other machines for automation.</Hint>
+  </CraftData>
+  <CraftData>
+    <Key>Tricky.5000SlotHopperx</Key>
+    <Category>storage</Category>
+    <Tier>4</Tier>
+    <CraftedKey>Tricky.5000SlotHopperx</CraftedKey>
+    <CraftedAmount>1</CraftedAmount>
+    <Costs>
+      <CraftCost>
+        <Key>ChromedMachineBlock</Key>
+        <Amount>10</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>MagneticMachineBlock</Key>
+        <Amount>10</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>Tricky.3000SlotHopperx</Key>
+        <Amount>1</Amount>
+      </CraftCost>
+    </Costs>
+    <ResearchRequirements>
+      <Research>T4_start</Research>
+    </ResearchRequirements>
+    <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
+    <Hint>Can be connected to other machines for automation.</Hint>
+  </CraftData>
+  <!--******************** Custom Storage Hoppers ********************-->
+    <CraftData>
+    <Key>Tricky.CustomHopper</Key>
+    <Category>storage</Category>
+    <Tier>0</Tier>
+    <CraftedKey>Tricky.CustomHopper</CraftedKey>
+    <CraftedAmount>1</CraftedAmount>
+    <Costs>
+      <CraftCost>
+        <Key>LightWeightMachineHousing</Key>
+        <Amount>5</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>IronGear</Key>
+        <Amount>10</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>PrimaryUpgradeModule</Key>
+        <Amount>1</Amount>
+      </CraftCost>
+    </Costs>
+    <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
     <Hint>Can be connected to other machines for automation.</Hint>
   </CraftData>
 </ArrayOfCraftData>

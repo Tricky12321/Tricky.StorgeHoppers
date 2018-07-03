@@ -7,9 +7,9 @@
     <ProjectGuid>{ABFB3A1D-63CA-49C9-8D55-DA3D9E6EA41F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Tricky.ExtraStorgeHoppers</RootNamespace>
-    <AssemblyName>plugin_Tricky.ExtraStorgeHoppers</AssemblyName>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <RootNamespace>Tricky.ExtraStorageHoppers</RootNamespace>
+    <AssemblyName>plugin_ExtraStorageHoppers</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -37,30 +37,51 @@
     <Optimize>false</Optimize>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Code\ExtraStorageHopperWindowNew.cs" />
-    <Compile Include="Machines\ExtraStorageHopper.cs">
-      <DeployService-Deploy>True</DeployService-Deploy>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Compile>
-    <Compile Include="Main.cs" />
+    <Compile Include="HopperTypeData.cs" />
+    <Compile Include="InventoryStack.cs" />
+    <Compile Include="MadVandal.FortressCraft\ItemBaseExtensions.cs" />
+    <Compile Include="MadVandal.FortressCraft\GenericMachinePanelHelper.cs" />
+    <Compile Include="MadVandal.FortressCraft\SegmentEntityExtensions.cs" />
+    <Compile Include="TrickyStorageHopperMod.cs" />
+    <Compile Include="MadVandal.FortressCraft\CubeCoordExtensions.cs" />
+    <Compile Include="MadVandal.FortressCraft\Logging.cs" />
+    <Compile Include="MadVandal.FortressCraft\MachineEntityExtensions.cs" />
+    <Compile Include="TrickyStorageHopper.cs" />
+    <Compile Include="TrickyStorageHopperWindow.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Version.xml">
-      <SubType>Designer</SubType>
-    </Content>
+    <Content Include="BlockPreview\Tricky.Black.png" />
+    <Content Include="BlockPreview\Tricky.Blue.png" />
+    <Content Include="BlockPreview\Tricky.Green.png" />
+    <Content Include="BlockPreview\Tricky.GreenOT.png" />
+    <Content Include="BlockPreview\Tricky.LightBlue.png" />
+    <Content Include="BlockPreview\Tricky.LightGreen.png" />
+    <Content Include="BlockPreview\Tricky.LightOrange.png" />
+    <Content Include="BlockPreview\Tricky.LightPurple.png" />
+    <Content Include="BlockPreview\Tricky.LightRed.png" />
+    <Content Include="BlockPreview\Tricky.LightYellow.png" />
+    <Content Include="BlockPreview\Tricky.Orange.png" />
+    <Content Include="BlockPreview\Tricky.Purple.png" />
+    <Content Include="BlockPreview\Tricky.PurpleOT.png" />
+    <Content Include="BlockPreview\Tricky.Red.png" />
+    <Content Include="BlockPreview\Tricky.RedOT.png" />
+    <Content Include="BlockPreview\Tricky.Yellow.png" />
+    <Content Include="BlockPreview\Tricky.YellowOT.png" />
+    <Content Include="Sprites\steamuserimages-a.akamaihd.net.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\FortressCraft\64\FC_64_Data\Managed\Assembly-CSharp.dll</HintPath>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\..\..\..\FCMods\FCVersion20Libs\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>..\..\..\..\FCMods\FCVersion20Libs\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>F:\Program Files (x86)\Steam\steamapps\common\FortressCraft\64\FC_64_Data\Managed\UnityEngine.dll</HintPath>
+    <Reference Include="UnityEngine">
+      <HintPath>..\..\..\..\FCMods\FCVersion20Libs\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
@@ -72,7 +93,45 @@
   </Target>
   -->
   <ItemGroup>
-    <None Include="XML\ManufacturerRecipes.xml" />
-    <None Include="XML\TerrainData.xml" />
+    <None Include="mod.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Sprites\HopperIconMask.xcf" />
+    <None Include="Sprites\Trick.Black.xcf" />
+    <None Include="Sprites\Tricky.Blue.xcf" />
+    <None Include="Sprites\Tricky.BlueOT.xcf" />
+    <None Include="Sprites\Tricky.Green.xcf" />
+    <None Include="Sprites\Tricky.GreenOT.xcf" />
+    <None Include="Sprites\Tricky.LightBlue.xcf" />
+    <None Include="Sprites\Tricky.LightGreen.xcf" />
+    <None Include="Sprites\Tricky.LightOrange.xcf" />
+    <None Include="Sprites\Tricky.LightPurple.xcf" />
+    <None Include="Sprites\Tricky.LightRed.xcf" />
+    <None Include="Sprites\Tricky.LightYellow.xcf" />
+    <None Include="Sprites\Tricky.Orange.xcf" />
+    <None Include="Sprites\Tricky.Purple.xcf" />
+    <None Include="Sprites\Tricky.PurpleOT.xcf" />
+    <None Include="Sprites\Tricky.Red.xcf" />
+    <None Include="Sprites\Tricky.RedOT.xcf" />
+    <None Include="Sprites\Tricky.Yellow.xcf" />
+    <None Include="Sprites\Tricky.YellowOT.xcf" />
+    <None Include="WorkshopFileId.config" />
+    <None Include="XML\ManufacturerRecipes.xml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="XML\TerrainData.xml">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
+  <PropertyGroup>
+    <PostBuildEvent>if not exist %25LOCALAPPDATA%25\ProjectorGames\FortressCraft\Mods\Tricky.ExtraStorageHoppers\9 mkdir %25LOCALAPPDATA%25\ProjectorGames\FortressCraft\Mods\Tricky.ExtraStorageHoppers\9
+copy $(TargetPath) %25LOCALAPPDATA%25\ProjectorGames\FortressCraft\Mods\Tricky.ExtraStorageHoppers\9
+xcopy "$(ProjectDir)\BlockPreview" %25LOCALAPPDATA%25\ProjectorGames\FortressCraft\Mods\Tricky.ExtraStorageHoppers\9\BlockPreview\ /Y /E /Q
+xcopy "$(ProjectDir)\Xml" %25LOCALAPPDATA%25\ProjectorGames\FortressCraft\Mods\Tricky.ExtraStorageHoppers\9\Xml\ /Y /E /Q
+copy $(ProjectDir)\mod.config %25LOCALAPPDATA%25\ProjectorGames\FortressCraft\Mods\Tricky.ExtraStorageHoppers\9
+copy $(ProjectDir)\WorkshopFileId.config %25LOCALAPPDATA%25\ProjectorGames\FortressCraft\Mods\Tricky.ExtraStorageHoppers
+
+
+</PostBuildEvent>
+  </PropertyGroup>
 </Project>
