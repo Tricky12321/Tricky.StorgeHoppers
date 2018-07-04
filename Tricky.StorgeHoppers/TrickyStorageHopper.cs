@@ -271,12 +271,25 @@ namespace Tricky.ExtraStorageHoppers
         /// </summary>
         private uint mOneTypeHopperStorageId;
 
-
         /// <summary>
         /// Hopper cube color.
         /// </summary>
         private Color mCubeColor;
 
+        /// <summary>
+        /// Indicates if the primary hivemind has been found and set.
+        /// </summary>
+        private bool mHivemindAvailable;
+
+        /// <summary>
+        /// Closest hive entity.
+        /// </summary>
+        private static HiveEntity mClosestHiveEntity;
+
+        /// <summary>
+        /// Closest hive entity re-check timer.
+        /// </summary>
+        private static float mClosedHiveEntityRecheckTimer = 60f;
 
 
         /// <summary>
@@ -323,7 +336,7 @@ namespace Tricky.ExtraStorageHoppers
                 Random random = new Random();
                 foreach (ItemBase item in GetInventory())
                 {
-                    Vector3 velocity = new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f);
+                    Vector3 velocity = new Vector3((float) random.NextDouble() - 0.5f, (float) random.NextDouble() - 0.5f, (float) random.NextDouble() - 0.5f);
                     ItemManager.instance.DropItem(item, mnX, mnY, mnZ, velocity);
                 }
 
@@ -353,6 +366,9 @@ namespace Tricky.ExtraStorageHoppers
                     if (mTimeUntilPlayerDistanceUpdate > 2.0)
                         mTimeUntilPlayerDistanceUpdate = 2f;
                 }
+
+                if (mValue == 0)
+                    PerformHiveSearch();
 
                 UpdateVacuum();
                 if (WorldScript.mbIsServer)
@@ -726,80 +742,93 @@ namespace Tricky.ExtraStorageHoppers
             // If this is a void hopper then handle handle hivemind feeding and leave without actually storing the object,
             if (mValue == 0)
             {
-                if (HivemindFeedingOn)
-                    CentralPowerHub.mClosestHive?.AddItem(itemToAdd);
+                int amount = itemToAdd.GetAmount();
+                if (HivemindFeedingOn && mClosestHiveEntity != null)
+                {
+                    for (int index = 0; index < amount; index++)
+                        mClosestHiveEntity.AddItem(itemToAdd);
+                    Logging.LogMessage(this, "Fed hivemind", 2);
+                }
+                else Logging.LogMessage(this, "Cannot feed hivemind until found", 2);
+
                 mLastItemAdded = itemToAdd;
-                VoidHopperDeleteCount += itemToAdd.GetAmount();
-                mForceTextUpdate = true;
-                return true;
-            }
-
-            // If item not allowed (wrong type for one type hopper) then fail.
-            if (!CheckItemAllowed(itemToAdd.ToStorageId()))
-            {
-                Logging.LogMessage(this, "CheckItemAllowed Failed", 2);
-                return false;
-            }
-
-            // Ensure free slot count is up to date.
-            CountFreeSlots();
-
-            // If there is insufficient space then return false.
-            int remainingCapacity = mMaximumCapacity - UsedCapacity;
-            if (remainingCapacity <= 0)
-            {
-                Logging.LogMessage(this, "Capacity Check Failed", 2);
-                return false;
-            }
-
-            lock (mInventory)
-            {
-                uint storageId = itemToAdd.ToStorageId();
-                Logging.LogMessage(this, "Storage Id:" + storageId, 2);
-                if (!mInventory.TryGetValue(storageId, out InventoryStack inventoryStack))
-                {
-                    mInventory[storageId] = inventoryStack = new InventoryStack(itemToAdd.mType, storageId);
-                    Logging.LogMessage(this, "Create New InventoryStack for storage Id:" + storageId, 2);
-                }
-
-                switch (itemToAdd.mType)
-                {
-                    case ItemType.ItemCubeStack:
-                        Logging.LogMessage(this, "Storing ItemCubeStack", 2);
-                        ItemCubeStack itemCubeStack = (ItemCubeStack) itemToAdd;
-                        if (itemCubeStack.mnAmount == 0 || itemCubeStack.mnAmount > remainingCapacity)
-                            return false;
-                        ((ItemCubeStack) inventoryStack.Item).mnAmount += itemCubeStack.mnAmount;
-                        break;
-
-                    case ItemType.ItemStack:
-                        Logging.LogMessage(this, "Storing ItemStack", 2);
-                        ItemStack itemStack = (ItemStack) itemToAdd;
-                        if (itemStack.mnAmount == 0 || itemStack.mnAmount > remainingCapacity)
-                            return false;
-
-                        ((ItemStack) inventoryStack.Item).mnAmount += itemStack.mnAmount;
-                        break;
-
-                    case ItemType.ItemSingle:
-                        Logging.LogMessage(this, "Storing ItemSingle as stack", 2);
-                        ((ItemStack) inventoryStack.Item).mnAmount++;
-                        break;
-
-                    default:
-                        Logging.LogMessage(this, "Storing OTHER ItemStack", 2);
-                        inventoryStack.AddSubStackItem(itemToAdd);
-                        break;
-                }
+                VoidHopperDeleteCount += amount;
 
                 mLastItemAdded = itemToAdd;
                 mLastItemAddedText = !WorldScript.mLocalPlayer.mResearch.IsKnown(itemToAdd)
                     ? "Unknown Material"
                     : ItemManager.GetItemName(itemToAdd);
             }
+            else
+            {
+                // If item not allowed (wrong type for one type hopper) then fail.
+                if (!CheckItemAllowed(itemToAdd.ToStorageId()))
+                {
+                    Logging.LogMessage(this, "CheckItemAllowed Failed", 2);
+                    return false;
+                }
 
-            CountFreeSlots();
-            Logging.LogMessage(this, "Recount used capacity:" + UsedCapacity, 2);
+                // Ensure free slot count is up to date.
+                CountFreeSlots();
+
+                // If there is insufficient space then return false.
+                int remainingCapacity = mMaximumCapacity - UsedCapacity;
+                if (remainingCapacity <= 0)
+                {
+                    Logging.LogMessage(this, "Capacity Check Failed", 2);
+                    return false;
+                }
+
+                lock (mInventory)
+                {
+                    uint storageId = itemToAdd.ToStorageId();
+                    Logging.LogMessage(this, "Storage Id:" + storageId, 2);
+                    if (!mInventory.TryGetValue(storageId, out InventoryStack inventoryStack))
+                    {
+                        mInventory[storageId] = inventoryStack = new InventoryStack(itemToAdd.mType, storageId);
+                        Logging.LogMessage(this, "Create New InventoryStack for storage Id:" + storageId, 2);
+                    }
+
+                    switch (itemToAdd.mType)
+                    {
+                        case ItemType.ItemCubeStack:
+                            Logging.LogMessage(this, "Storing ItemCubeStack", 2);
+                            ItemCubeStack itemCubeStack = (ItemCubeStack) itemToAdd;
+                            if (itemCubeStack.mnAmount == 0 || itemCubeStack.mnAmount > remainingCapacity)
+                                return false;
+                            ((ItemCubeStack) inventoryStack.Item).mnAmount += itemCubeStack.mnAmount;
+                            break;
+
+                        case ItemType.ItemStack:
+                            Logging.LogMessage(this, "Storing ItemStack", 2);
+                            ItemStack itemStack = (ItemStack) itemToAdd;
+                            if (itemStack.mnAmount == 0 || itemStack.mnAmount > remainingCapacity)
+                                return false;
+
+                            ((ItemStack) inventoryStack.Item).mnAmount += itemStack.mnAmount;
+                            break;
+
+                        case ItemType.ItemSingle:
+                            Logging.LogMessage(this, "Storing ItemSingle as stack", 2);
+                            ((ItemStack) inventoryStack.Item).mnAmount++;
+                            break;
+
+                        default:
+                            Logging.LogMessage(this, "Storing OTHER ItemStack", 2);
+                            inventoryStack.AddSubStackItem(itemToAdd);
+                            break;
+                    }
+
+                    mLastItemAdded = itemToAdd;
+                    mLastItemAddedText = !WorldScript.mLocalPlayer.mResearch.IsKnown(itemToAdd)
+                        ? "Unknown Material"
+                        : ItemManager.GetItemName(itemToAdd);
+
+                    CountFreeSlots();
+                    Logging.LogMessage(this, "Recount used capacity:" + UsedCapacity, 2);
+                }
+            }
+
             MarkDirtyDelayed();
             mForceTextUpdate = true;
             return true;
@@ -814,20 +843,34 @@ namespace Tricky.ExtraStorageHoppers
         /// <returns>True if successful, otherwise false.</returns>
         public bool AddCube(ushort cubeType, ushort cubeValue)
         {
-            // If cube value is 0 or not remaining capacity then leave.
-            int remainingCapacity = mMaximumCapacity - UsedCapacity;
-            if (cubeType == 0 || remainingCapacity <= 0)
+            // If cube value is 0 then leave.
+            if (cubeType == 0)
                 return false;
 
             // If this is a void hopper then handle handle hivemind feeding and leave without actually storing the object,
             if (mValue == 0)
             {
-                if (HivemindFeedingOn)
-                    CentralPowerHub.mClosestHive?.AddCube(cubeType, cubeValue);
+                if (HivemindFeedingOn && mClosestHiveEntity != null)
+                {
+                    mClosestHiveEntity.AddCube(cubeType, cubeValue);
+                    Logging.LogMessage(this, "Fed hivemind", 2);
+                }
+                else Logging.LogMessage(this, "Cannot feed hivemind until found", 2);
+
                 VoidHopperDeleteCount++;
+
+                mLastItemAdded = new ItemCubeStack(cubeType, cubeValue, 1);
+                mLastItemAddedText = !WorldScript.mLocalPlayer.mResearch.IsKnown(cubeType, cubeValue)
+                    ? "Unknown Material"
+                    : TerrainData.GetNameForValue(cubeType, cubeValue);
             }
             else
             {
+                // If no remaining capacity then leave.
+                int remainingCapacity = mMaximumCapacity - UsedCapacity;
+                if (remainingCapacity <= 0)
+                    return false;
+
                 uint storageId = ((uint) cubeType << 16) + cubeValue;
 
                 // If item not allowed (wrong type for one type hopper) then fail.
@@ -841,15 +884,15 @@ namespace Tricky.ExtraStorageHoppers
 
                     ((ItemCubeStack) inventoryStack.Item).mnAmount++;
                 }
+
+                mLastItemAdded = new ItemCubeStack(cubeType, cubeValue, 1);
+                mLastItemAddedText = !WorldScript.mLocalPlayer.mResearch.IsKnown(cubeType, cubeValue)
+                    ? "Unknown Material"
+                    : TerrainData.GetNameForValue(cubeType, cubeValue);
+
+                CountFreeSlots();
             }
 
-
-            mLastItemAdded = new ItemCubeStack(cubeType, cubeValue, 1);
-            mLastItemAddedText = !WorldScript.mLocalPlayer.mResearch.IsKnown(cubeType, cubeValue)
-                ? "Unknown Material"
-                : TerrainData.GetNameForValue(cubeType, cubeValue);
-
-            CountFreeSlots();
             MarkDirtyDelayed();
             mForceTextUpdate = true;
             return true;
@@ -1387,7 +1430,9 @@ namespace Tricky.ExtraStorageHoppers
                                          (inventoryCubeValue == exemplarCubeValue || exemplarCubeValue == ushort.MaxValue);
                             if (match == invertExemplar)
                             {
-                                Logging.LogMessage(this, "TryExtract - Fail Exemplar Check on ItemType:"+inventoryStack.ItemType+ " CubeType:"+inventoryStack.CubeType+" CubeValue:"+inventoryStack.CubeValue, 2);
+                                Logging.LogMessage(this,
+                                    "TryExtract - Fail Exemplar Check on ItemType:" + inventoryStack.ItemType + " CubeType:" + inventoryStack.CubeType + " CubeValue:" +
+                                    inventoryStack.CubeValue, 2);
                                 continue;
                             }
                         }
@@ -2349,8 +2394,13 @@ namespace Tricky.ExtraStorageHoppers
                     stringBuilder.Append("\n" + string.Format(PersistentSettings.GetString("Last_Item_X"), mLastItemAdded));
 
                 int availableStorage = Math.Max(0, mMaximumCapacity - UsedCapacity);
-                stringBuilder.Append("\nUsed: " + UsedCapacity + "  " + "Free: " + availableStorage +
-                                     "\n" + PersistentSettings.GetString("UI_E_Open_Interface") +
+
+                if (mValue == 0)
+                    stringBuilder.Append("\nDeleted: " + VoidHopperDeleteCount);
+                else
+                    stringBuilder.Append("\nUsed: " + UsedCapacity + "  " + "Free: " + availableStorage);
+
+                stringBuilder.Append("\n" + PersistentSettings.GetString("UI_E_Open_Interface") +
                                      "\n" + string.Format(PersistentSettings.GetString("Shift_E_Toggle_Vacuum_Status_X"),
                                          !VacuumOn ? PersistentSettings.GetString("Off") : PersistentSettings.GetString("On")));
                 if (mValue == 0)
@@ -2408,6 +2458,9 @@ namespace Tricky.ExtraStorageHoppers
 
                 stringBuilder.Append("\n" + PersistentSettings.GetString("Shift_Q_to_toggle_permissions"));
 
+                if (mValue == 0)
+                    stringBuilder.Append(mHivemindAvailable ? "\nPrimary hivemind located" : "\nWaiting for hivemind search...");
+
                 if (NetworkManager.mbClientRunning)
                     stringBuilder.Append("\n" + string.Format(PersistentSettings.GetString("NetworkSync_X"), mrNetworkSyncTimer.ToString("F2")));
 
@@ -2458,14 +2511,22 @@ namespace Tricky.ExtraStorageHoppers
                         TrickyStorageHopperWindow.StoreItems(WorldScript.mLocalPlayer, this, itemToStore))
                         UIManager.ForceNGUIUpdate = 0.1f;
 
-                    if (OneTypeHopper && UIManager.HotBarShown && Input.GetButtonDown("Build Gun") && Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.LeftControl) &&
-                        IsEmpty())
-
+                    if (Input.GetButtonDown("Build Gun") && Input.GetKey(KeyCode.LeftShift) && !Input.GetKey(KeyCode.LeftControl))
                     {
-                        ItemBase itemBase = GetSelectedHotbarItemBase();
-                        SetOneTypeItem(itemBase, true);
-                        UIManager.ForceNGUIUpdate = 0.1f;
-                        AudioHUDManager.instance.HUDIn();
+                        if (OneTypeHopper && UIManager.HotBarShown && IsEmpty())
+                        {
+                            ItemBase itemBase = GetSelectedHotbarItemBase();
+                            SetOneTypeItem(itemBase, true);
+                            UIManager.ForceNGUIUpdate = 0.1f;
+                            AudioHUDManager.instance.HUDIn();
+                        }
+
+                        if (mValue == 0)
+                        {
+                            SetHivemindFeeding(!HivemindFeedingOn, true);
+                            UIManager.ForceNGUIUpdate = 0.1f;
+                            AudioHUDManager.instance.HUDIn();
+                        }
                     }
                 }
 
@@ -2920,5 +2981,78 @@ namespace Tricky.ExtraStorageHoppers
             return itemBase;
         }
 
+
+        /// <summary>
+        /// Perform hive entity search.
+        /// </summary>
+        private void PerformHiveSearch()
+        {
+            // If closest is dead then dereference it.
+            if (mClosestHiveEntity != null && (mClosestHiveEntity.mbMurdered || mClosestHiveEntity.mbDelete || mClosedHiveEntityRecheckTimer < 0))
+                mClosestHiveEntity = null;
+
+            // If closest check timer expired then dereference it and reset timer.
+            if (mClosestHiveEntity != null)
+            {
+                mClosedHiveEntityRecheckTimer -= LowFrequencyThread.mrPreviousUpdateTimeStep;
+                if (mClosedHiveEntityRecheckTimer <= 0)
+                {
+                    Logging.LogMessage("Closest hive entity cleared for re-search", 2);
+                    mClosestHiveEntity = null;
+                    mClosedHiveEntityRecheckTimer = 60;
+                }
+            }
+
+            // If closest hive is set then leave.
+            if (mClosestHiveEntity != null)
+            {
+                mHivemindAvailable = true;
+                return;
+            }
+
+            // Closest to CPH is found then use it.
+            if (CentralPowerHub.mClosestHive != null)
+            {
+                mClosestHiveEntity = CentralPowerHub.mClosestHive;
+                mHivemindAvailable = true;
+                Logging.LogMessage("Closest hive mind entity set from CPH", 2);
+                return;
+            }
+
+            Logging.LogMessage("Closest hive mind entity search", 2);
+            int entityTypeIndex = (int) eSegmentEntity.HiveEntity;
+            float currentClosestDistance = 9999f;
+            foreach (Segment updateSegment in WorldScript.instance.mSegmentUpdater.updateList)
+            {
+                if (updateSegment == null || !updateSegment.mbInitialGenerationComplete || updateSegment.mEntities?[entityTypeIndex] == null)
+                    continue;
+
+                int count = updateSegment.mEntities[entityTypeIndex].Count;
+                if (count <= 0)
+                    continue;
+
+                for (int entityIndex = 0; entityIndex < count; ++entityIndex)
+                {
+                    if (!(updateSegment.mEntities[entityTypeIndex][entityIndex] is HiveEntity hiveEntity))
+                        continue;
+
+                    float sqrMagnitude = new Vector3(CentralPowerHub.mnCPH_X - hiveEntity.mnX, CentralPowerHub.mnCPH_Y - hiveEntity.mnY,
+                        CentralPowerHub.mnCPH_Z - hiveEntity.mnZ).sqrMagnitude;
+                    if (sqrMagnitude < currentClosestDistance)
+                    {
+                        mClosestHiveEntity = hiveEntity;
+                        currentClosestDistance = sqrMagnitude;
+                    }
+                }
+            }
+
+            mHivemindAvailable = mClosestHiveEntity != null;
+            if (mHivemindAvailable)
+            {
+                Logging.LogMessage("Closest hivemind set at " + mClosestHiveEntity.ToPositionString(), 2);
+            }
+            else Logging.LogMessage("Closest hive mind entity search failed", 2);
+
+        }
     }
 }
