@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using MadVandal.FortressCraft;
+using Steamworks;
 
 namespace Tricky.ExtraStorageHoppers
 {
@@ -57,13 +58,33 @@ namespace Tricky.ExtraStorageHoppers
         {
             get
             {
+                int amount;
                 switch (ItemType)
                 {
                     case ItemType.ItemCubeStack:
-                        return ((ItemCubeStack)Item).mnAmount;
+                    {
+                        if (Item == null)
+                        {
+                            Logging.LogError("NULL item on inventory CubeStack");
+                            return 0;
+                        }
+
+                        amount = ((ItemCubeStack) Item).mnAmount;
+                        Logging.LogMessage("Count on " + StorageId + " = " + amount, 2);
+                        return amount;
+                    }
                     case ItemType.ItemStack:
-                        return ((ItemStack)Item).mnAmount;
+                        if (Item == null)
+                        {
+                            Logging.LogError("NULL item on inventory ItemStack");
+                            return 0;
+                        }
+
+                        amount = ((ItemStack) Item).mnAmount;
+                        Logging.LogMessage("Count on "+StorageId+" = "+ amount, 2);
+                        return amount;
                     default:
+                        Logging.LogMessage("Count on " + StorageId + " = " + mSubStackCount,2);
                         return mSubStackCount;
                 }
             }
@@ -111,7 +132,7 @@ namespace Tricky.ExtraStorageHoppers
 
             if (itemType == ItemType.ItemCubeStack)
                 Item = new ItemCubeStack(CubeType, CubeValue, 0);
-            else if (itemType == ItemType.ItemStack)
+            else if (itemType == ItemType.ItemStack || itemType== ItemType.ItemSingle)
                 Item = new ItemStack((int) storageId, 0);
             else if (itemType == ItemType.ItemDurability)
             {
@@ -333,6 +354,12 @@ namespace Tricky.ExtraStorageHoppers
                             return false;
                     return true;
 
+                case ItemType.ItemSingle:
+                    ItemStack itemStack = (ItemStack) Item;
+                    for(int count=0; count < itemStack.mnAmount; count++) 
+                        if (!itemFunc(new ItemSingle((int)StorageId), state))
+                            return false;
+                    return true;
 
                 default:
                     return itemFunc(Item, state);
@@ -349,6 +376,17 @@ namespace Tricky.ExtraStorageHoppers
             mDurabilitySubStack.Clear();
             mLocationSubStack.Clear();
             mSubStackCount = 0;
+
+            switch (ItemType)
+            {
+                case ItemType.ItemSingle:
+                case ItemType.ItemStack:
+                    ((ItemStack) Item).mnAmount = 0;
+                    break;
+                case ItemType.ItemCubeStack:
+                    ((ItemCubeStack)Item).mnAmount = 0;
+                    break;
+            }
         }
 
 

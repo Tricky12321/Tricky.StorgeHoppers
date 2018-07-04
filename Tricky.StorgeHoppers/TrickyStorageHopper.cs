@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
+using Random = System.Random;
 
 namespace Tricky.ExtraStorageHoppers
 {
@@ -237,7 +238,7 @@ namespace Tricky.ExtraStorageHoppers
         /// <summary>
         /// Gets or sets a value indicating if content sharing is active.
         /// </summary>
-        public bool ContentSharingOn { get; private set; } = true;
+        public bool ContentSharingOn { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating if hivemind feeding is active.
@@ -263,7 +264,7 @@ namespace Tricky.ExtraStorageHoppers
         /// Void hopper delete count.
         /// </summary>
         public int VoidHopperDeleteCount { get; private set; }
-         
+
 
         /// <summary>
         /// One-type hopper storage Id (0 if not assigned).
@@ -319,6 +320,13 @@ namespace Tricky.ExtraStorageHoppers
 
             lock (mInventory)
             {
+                Random random = new Random();
+                foreach (ItemBase item in GetInventory())
+                {
+                    Vector3 velocity = new Vector3((float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f, (float)random.NextDouble() - 0.5f);
+                    ItemManager.instance.DropItem(item, mnX, mnY, mnZ, velocity);
+                }
+
                 mInventory.Clear();
             }
 
@@ -552,7 +560,7 @@ namespace Tricky.ExtraStorageHoppers
                 mPassCount[neighborIndex] = conveyorEntity.mValue == 15 ? 1 : OUTPUT_CYCLE_DELAY;
 
                 // If the conveyor is motorized, and the conveyor does not have sufficient power then leave.
-                if (conveyorEntity.mValue == 15 && conveyorEntity.mrCurrentPower < ConveyorEntity.PowerPerItem) 
+                if (conveyorEntity.mValue == 15 && conveyorEntity.mrCurrentPower < ConveyorEntity.PowerPerItem)
                     return;
 
                 // If the conveyor is current carrying or not ready then leave.
@@ -677,18 +685,28 @@ namespace Tricky.ExtraStorageHoppers
         /// </summary>
         private void CountFreeSlots()
         {
-            int originalStorageUsed = UsedCapacity;
-            UsedCapacity = 0;
-            lock (mInventory)
+            try
             {
-                foreach (InventoryStack inventoryStack in mInventory.Values)
-                    UsedCapacity += inventoryStack.Count;
+                lock (mInventory)
+                {
+                    int originalStorageUsed = UsedCapacity;
+                    Logging.LogMessage(this, "CountFreeSlots - Original used", 2);
+                    int newUsedCapacity = 0;
+                    foreach (InventoryStack inventoryStack in mInventory.Values)
+                        newUsedCapacity += inventoryStack.Count;
 
-                if (originalStorageUsed != UsedCapacity)
-                    mForceTextUpdate = true;
+                    if (newUsedCapacity != originalStorageUsed)
+                    {
+                        UsedCapacity = newUsedCapacity;
+                        mForceTextUpdate = true;
+                        TrickyStorageHopperWindow.SetDirty();
+                    }
+                }
             }
-
-            TrickyStorageHopperWindow.SetDirty();
+            catch (Exception e)
+            {
+                Logging.LogException(this, e);
+            }
         }
 
 
@@ -699,6 +717,8 @@ namespace Tricky.ExtraStorageHoppers
         /// <returns>True if successful, otherwise false.</returns>
         public bool AddItem(ItemBase itemToAdd)
         {
+            Logging.LogMessage(this, "AddItem Started for " + (itemToAdd == null ? "<NULL>" : itemToAdd.GetDisplayString()), 2);
+
             // If null then return as successful (even though it did nothing). Not sure if this is needed but mimics vanilla to be safe.
             if (itemToAdd == null)
                 return true;
@@ -716,7 +736,10 @@ namespace Tricky.ExtraStorageHoppers
 
             // If item not allowed (wrong type for one type hopper) then fail.
             if (!CheckItemAllowed(itemToAdd.ToStorageId()))
+            {
+                Logging.LogMessage(this, "CheckItemAllowed Failed", 2);
                 return false;
+            }
 
             // Ensure free slot count is up to date.
             CountFreeSlots();
@@ -724,17 +747,25 @@ namespace Tricky.ExtraStorageHoppers
             // If there is insufficient space then return false.
             int remainingCapacity = mMaximumCapacity - UsedCapacity;
             if (remainingCapacity <= 0)
+            {
+                Logging.LogMessage(this, "Capacity Check Failed", 2);
                 return false;
+            }
 
             lock (mInventory)
             {
                 uint storageId = itemToAdd.ToStorageId();
+                Logging.LogMessage(this, "Storage Id:" + storageId, 2);
                 if (!mInventory.TryGetValue(storageId, out InventoryStack inventoryStack))
+                {
                     mInventory[storageId] = inventoryStack = new InventoryStack(itemToAdd.mType, storageId);
+                    Logging.LogMessage(this, "Create New InventoryStack for storage Id:" + storageId, 2);
+                }
 
                 switch (itemToAdd.mType)
                 {
                     case ItemType.ItemCubeStack:
+                        Logging.LogMessage(this, "Storing ItemCubeStack", 2);
                         ItemCubeStack itemCubeStack = (ItemCubeStack) itemToAdd;
                         if (itemCubeStack.mnAmount == 0 || itemCubeStack.mnAmount > remainingCapacity)
                             return false;
@@ -742,6 +773,7 @@ namespace Tricky.ExtraStorageHoppers
                         break;
 
                     case ItemType.ItemStack:
+                        Logging.LogMessage(this, "Storing ItemStack", 2);
                         ItemStack itemStack = (ItemStack) itemToAdd;
                         if (itemStack.mnAmount == 0 || itemStack.mnAmount > remainingCapacity)
                             return false;
@@ -749,7 +781,13 @@ namespace Tricky.ExtraStorageHoppers
                         ((ItemStack) inventoryStack.Item).mnAmount += itemStack.mnAmount;
                         break;
 
+                    case ItemType.ItemSingle:
+                        Logging.LogMessage(this, "Storing ItemSingle as stack", 2);
+                        ((ItemStack) inventoryStack.Item).mnAmount++;
+                        break;
+
                     default:
+                        Logging.LogMessage(this, "Storing OTHER ItemStack", 2);
                         inventoryStack.AddSubStackItem(itemToAdd);
                         break;
                 }
@@ -761,6 +799,7 @@ namespace Tricky.ExtraStorageHoppers
             }
 
             CountFreeSlots();
+            Logging.LogMessage(this, "Recount used capacity:" + UsedCapacity, 2);
             MarkDirtyDelayed();
             mForceTextUpdate = true;
             return true;
@@ -1275,152 +1314,197 @@ namespace Tricky.ExtraStorageHoppers
             int minimumAmount, int maximumAmount, bool knownItemsOnly, bool countOnly, bool trashItems, bool convertCubesToItems, out ItemBase returnedItem,
             out ushort returnedCubeType, out ushort returnedCubeValue, out int returnedAmount)
         {
+            Logging.LogMessage(this, "TryExtract Start", 2);
             if (lType == eHopperRequestType.eNone && exemplarItemId == -1 && exemplarCubeType == 0)
             {
                 returnedItem = null;
                 returnedCubeType = 0;
                 returnedCubeValue = 0;
                 returnedAmount = 0;
+                Logging.LogMessage(this, "TryExtract Fail eNone/-1/0", 2);
                 return false;
             }
 
+            Logging.LogMessage(this, "TryExtract - Type: " + lType + " EItemId:" + exemplarItemId + " eCubeType:" + exemplarCubeType + " eCubeValue:" + exemplarCubeValue +
+                                     " eInvert:" + invertExemplar + " Min:" + minimumAmount + " Max: " + maximumAmount + " KIO:" + knownItemsOnly + "" +
+                                     " CO:" + countOnly + " TR:" + trashItems + " CONV:" + convertCubesToItems, 2);
             int amount = 0;
             uint returnStorageId = uint.MaxValue;
             List<uint> removeStorageIdList = new List<uint>();
 
             lock (mInventory)
             {
-                List<uint> storageIdList = new List<uint>(mInventory.Keys.ToList());
-                InventoryStack inventoryStack;
-                for (int index = 0; index < storageIdList.Count; index++)
+                if (!invertExemplar && lType == eHopperRequestType.eAny && !countOnly)
                 {
-                    ++mRoundRobinOffset;
-                    mRoundRobinOffset %= storageIdList.Count;
-
-                    uint storageId = storageIdList[mRoundRobinOffset];
-                    inventoryStack = mInventory[storageId];
-                    int inventoryStackCount = inventoryStack.Count;
-
-                    ushort inventoryCubeType = inventoryStack.CubeType;
-                    ushort inventoryCubeValue = inventoryStack.CubeValue;
-
-                    // Perform exemplar check.
-                    if (exemplarItemId >= 0)
+                    if (exemplarItemId != -1 && mInventory.ContainsKey((uint) exemplarItemId))
                     {
-                        bool match = inventoryStack.ItemType != ItemType.ItemCubeStack && storageId == exemplarItemId;
-                        if (match == invertExemplar)
-                            continue;
+                        returnStorageId = (uint) exemplarItemId;
+                        removeStorageIdList.Add(returnStorageId);
+                        Logging.LogMessage(this, "Direct Pull storage Id: " + returnStorageId, 2);
                     }
                     else if (exemplarCubeType > 0)
                     {
-                        bool match = inventoryStack.ItemType == ItemType.ItemCubeStack && inventoryCubeType == exemplarCubeType &&
-                                     (inventoryCubeValue == exemplarCubeValue || exemplarCubeType == ushort.MaxValue);
-                        if (match == invertExemplar)
-                            continue;
-                    }
-
-                    // Perform request type check.
-                    if (lType != eHopperRequestType.eAny)
-                    {
-                        bool itemDoesNotMatchRequest = false;
-                        if (inventoryStack.ItemType != ItemType.ItemCubeStack)
+                        uint storageId = (uint) (exemplarCubeType << 16) + exemplarCubeValue;
+                        if (mInventory.ContainsKey(storageId))
                         {
-                            int itemId = (int) storageId;
-                            if (lType == eHopperRequestType.eOrganic && itemId >= 4000 && itemId <= 4101)
-                                itemDoesNotMatchRequest = true;
-                            if (lType == eHopperRequestType.eBarsOnly)
-                            {
-                                if (itemId == ItemEntries.CopperBar)
-                                    itemDoesNotMatchRequest = true;
-                                if (itemId == ItemEntries.TinBar)
-                                    itemDoesNotMatchRequest = true;
-                                if (itemId == ItemEntries.IronBar)
-                                    itemDoesNotMatchRequest = true;
-                                if (itemId == ItemEntries.LithiumBar)
-                                    itemDoesNotMatchRequest = true;
-                                if (itemId == ItemEntries.GoldBar)
-                                    itemDoesNotMatchRequest = true;
-                                if (itemId == ItemEntries.NickelBar)
-                                    itemDoesNotMatchRequest = true;
-                                if (itemId == ItemEntries.TitaniumBar)
-                                    itemDoesNotMatchRequest = true;
-                                if (itemId == ItemEntries.ChromiumBar)
-                                    itemDoesNotMatchRequest = true;
-                                if (itemId == ItemEntries.MolybdenumBar)
-                                    itemDoesNotMatchRequest = true;
-                            }
-
-                            if (lType == eHopperRequestType.eAnyCraftedItem)
-                                itemDoesNotMatchRequest = true;
-                            if (lType == eHopperRequestType.eResearchable)
-                            {
-                                ItemEntry itemEntry = ItemEntry.mEntries[itemId];
-                                if (itemEntry != null && itemEntry.DecomposeValue > 0)
-                                    itemDoesNotMatchRequest = true;
-                            }
-                        }
-                        else
-                        {
-                            if (lType == eHopperRequestType.eResearchable)
-                            {
-                                TerrainDataEntry terrainDataEntry = TerrainData.mEntries[inventoryCubeType];
-                                if (terrainDataEntry != null && terrainDataEntry.DecomposeValue > 0)
-                                    itemDoesNotMatchRequest = true;
-                            }
-
-                            if (lType == eHopperRequestType.eHighCalorieOnly && CubeHelper.IsHighCalorie(inventoryCubeType))
-                                itemDoesNotMatchRequest = true;
-                            if (lType == eHopperRequestType.eOreOnly && CubeHelper.IsSmeltableOre(inventoryCubeType))
-                                itemDoesNotMatchRequest = true;
-                            if (lType == eHopperRequestType.eGarbage && CubeHelper.IsGarbage(inventoryCubeType))
-                                itemDoesNotMatchRequest = true;
-                            if (lType == eHopperRequestType.eCrystals && inventoryCubeType == eCubeTypes.OreCrystal)
-                                itemDoesNotMatchRequest = true;
-                            if (lType == eHopperRequestType.eGems && inventoryCubeType == eCubeTypes.Crystal)
-                                itemDoesNotMatchRequest = true;
-                            if (lType == eHopperRequestType.eBioMass && inventoryCubeType == eCubeTypes.OreBioMass)
-                                itemDoesNotMatchRequest = true;
-                            if (lType == eHopperRequestType.eSmeltable && CubeHelper.IsIngottableOre(inventoryCubeType))
-                                itemDoesNotMatchRequest = true;
-                        }
-
-                        // This makes filter conveyor invert feature work.
-                        if (itemDoesNotMatchRequest == invertExemplar)
-                            continue;
-                    }
-
-                    // Perform known items check.
-                    if (knownItemsOnly)
-                    {
-                        if (inventoryStack.ItemType != ItemType.ItemCubeStack && !WorldScript.mLocalPlayer.mResearch.IsKnown((int) storageId) ||
-                            inventoryStack.ItemType == ItemType.ItemCubeStack &&
-                            !WorldScript.mLocalPlayer.mResearch.IsKnown(inventoryCubeType, inventoryCubeValue))
-                            continue;
-                    }
-
-                    // If count only then tally the amount and continue.
-                    if (countOnly)
-                    {
-                        amount += inventoryStackCount;
-                        continue;
-                    }
-
-                    if (returnStorageId == uint.MaxValue)
-                    {
-                        bool isStack = inventoryStack.ItemType == ItemType.ItemCubeStack || inventoryStack.ItemType == ItemType.ItemStack;
-                        if (isStack && inventoryStackCount >= minimumAmount && maximumAmount > 0 ||
-                            !isStack && minimumAmount <= 1 && maximumAmount > 0)
+                            Logging.LogMessage(this, "Direct Pull storage Id: " + returnStorageId, 2);
+                            removeStorageIdList.Add(storageId);
                             returnStorageId = storageId;
+                        }
                     }
-
-                    removeStorageIdList.Add(storageId);
-
-                    if (!trashItems && returnStorageId != uint.MaxValue)
-                        break;
                 }
 
-                if (countOnly || removeStorageIdList.Count == 0 || returnStorageId == uint.MaxValue && !trashItems)
+                InventoryStack inventoryStack;
+                if (returnStorageId == uint.MaxValue)
                 {
+                    List<uint> storageIdList = new List<uint>(mInventory.Keys.ToList());
+                    for (int index = 0; index < storageIdList.Count; index++)
+                    {
+                        ++mRoundRobinOffset;
+                        mRoundRobinOffset %= storageIdList.Count;
+
+                        uint storageId = storageIdList[mRoundRobinOffset];
+                        inventoryStack = mInventory[storageId];
+                        int inventoryStackCount = inventoryStack.Count;
+
+                        Logging.LogMessage(this, "TryExtract - Check Stack: " + ItemBaseExtensions.GetStorageIdName(inventoryStack.StorageId), 2);
+                        ushort inventoryCubeType = inventoryStack.CubeType;
+                        ushort inventoryCubeValue = inventoryStack.CubeValue;
+
+                        // Perform exemplar check.
+                        if (exemplarItemId >= 0)
+                        {
+                            bool match = inventoryStack.ItemType != ItemType.ItemCubeStack && storageId == exemplarItemId;
+                            if (match == invertExemplar)
+                            {
+                                Logging.LogMessage(this, "TryExtract - Fail Exemplar Check", 2);
+                                continue;
+                            }
+                        }
+                        else if (exemplarCubeType > 0)
+                        {
+                            bool match = inventoryStack.ItemType == ItemType.ItemCubeStack && inventoryCubeType == exemplarCubeType &&
+                                         (inventoryCubeValue == exemplarCubeValue || exemplarCubeValue == ushort.MaxValue);
+                            if (match == invertExemplar)
+                            {
+                                Logging.LogMessage(this, "TryExtract - Fail Exemplar Check on ItemType:"+inventoryStack.ItemType+ " CubeType:"+inventoryStack.CubeType+" CubeValue:"+inventoryStack.CubeValue, 2);
+                                continue;
+                            }
+                        }
+
+                        // Perform request type check.
+                        if (lType != eHopperRequestType.eAny)
+                        {
+                            bool itemDoesNotMatchRequest = false;
+                            if (inventoryStack.ItemType != ItemType.ItemCubeStack)
+                            {
+                                int itemId = (int) storageId;
+                                if (lType == eHopperRequestType.eOrganic && itemId >= 4000 && itemId <= 4101)
+                                    itemDoesNotMatchRequest = true;
+                                if (lType == eHopperRequestType.eBarsOnly)
+                                {
+                                    if (itemId == ItemEntries.CopperBar)
+                                        itemDoesNotMatchRequest = true;
+                                    if (itemId == ItemEntries.TinBar)
+                                        itemDoesNotMatchRequest = true;
+                                    if (itemId == ItemEntries.IronBar)
+                                        itemDoesNotMatchRequest = true;
+                                    if (itemId == ItemEntries.LithiumBar)
+                                        itemDoesNotMatchRequest = true;
+                                    if (itemId == ItemEntries.GoldBar)
+                                        itemDoesNotMatchRequest = true;
+                                    if (itemId == ItemEntries.NickelBar)
+                                        itemDoesNotMatchRequest = true;
+                                    if (itemId == ItemEntries.TitaniumBar)
+                                        itemDoesNotMatchRequest = true;
+                                    if (itemId == ItemEntries.ChromiumBar)
+                                        itemDoesNotMatchRequest = true;
+                                    if (itemId == ItemEntries.MolybdenumBar)
+                                        itemDoesNotMatchRequest = true;
+                                }
+
+                                if (lType == eHopperRequestType.eAnyCraftedItem)
+                                    itemDoesNotMatchRequest = true;
+                                if (lType == eHopperRequestType.eResearchable)
+                                {
+                                    ItemEntry itemEntry = ItemEntry.mEntries[itemId];
+                                    if (itemEntry != null && itemEntry.DecomposeValue > 0)
+                                        itemDoesNotMatchRequest = true;
+                                }
+                            }
+                            else
+                            {
+                                if (lType == eHopperRequestType.eResearchable)
+                                {
+                                    TerrainDataEntry terrainDataEntry = TerrainData.mEntries[inventoryCubeType];
+                                    if (terrainDataEntry != null && terrainDataEntry.DecomposeValue > 0)
+                                        itemDoesNotMatchRequest = true;
+                                }
+
+                                if (lType == eHopperRequestType.eHighCalorieOnly && CubeHelper.IsHighCalorie(inventoryCubeType))
+                                    itemDoesNotMatchRequest = true;
+                                if (lType == eHopperRequestType.eOreOnly && CubeHelper.IsSmeltableOre(inventoryCubeType))
+                                    itemDoesNotMatchRequest = true;
+                                if (lType == eHopperRequestType.eGarbage && CubeHelper.IsGarbage(inventoryCubeType))
+                                    itemDoesNotMatchRequest = true;
+                                if (lType == eHopperRequestType.eCrystals && inventoryCubeType == eCubeTypes.OreCrystal)
+                                    itemDoesNotMatchRequest = true;
+                                if (lType == eHopperRequestType.eGems && inventoryCubeType == eCubeTypes.Crystal)
+                                    itemDoesNotMatchRequest = true;
+                                if (lType == eHopperRequestType.eBioMass && inventoryCubeType == eCubeTypes.OreBioMass)
+                                    itemDoesNotMatchRequest = true;
+                                if (lType == eHopperRequestType.eSmeltable && CubeHelper.IsIngottableOre(inventoryCubeType))
+                                    itemDoesNotMatchRequest = true;
+                            }
+
+                            // This makes filter conveyor invert feature work.
+                            if (itemDoesNotMatchRequest == invertExemplar)
+                            {
+                                Logging.LogMessage(this, "TryExtract - Fail request type check", 2);
+                                continue;
+                            }
+                        }
+
+                        // Perform known items check.
+                        if (knownItemsOnly)
+                        {
+                            if (inventoryStack.ItemType != ItemType.ItemCubeStack && !WorldScript.mLocalPlayer.mResearch.IsKnown((int) storageId) ||
+                                inventoryStack.ItemType == ItemType.ItemCubeStack &&
+                                !WorldScript.mLocalPlayer.mResearch.IsKnown(inventoryCubeType, inventoryCubeValue))
+                            {
+                                Logging.LogMessage(this, "TryExtract - Fail known item check", 2);
+                                continue;
+                            }
+                        }
+
+                        // If count only then tally the amount and continue.
+                        if (countOnly)
+                        {
+                            amount += inventoryStackCount;
+                            Logging.LogMessage(this, "TryExtract - Count only add " + inventoryStackCount + " for " + amount, 2);
+                            continue;
+                        }
+
+                        if (returnStorageId == uint.MaxValue)
+                        {
+                            bool isStack = inventoryStack.ItemType == ItemType.ItemCubeStack || inventoryStack.ItemType == ItemType.ItemStack;
+                            if (isStack && inventoryStackCount >= minimumAmount && maximumAmount > 0 ||
+                                !isStack && minimumAmount <= 1 && maximumAmount > 0)
+                                returnStorageId = storageId;
+                        }
+
+                        removeStorageIdList.Add(storageId);
+                        Logging.LogMessage(this, "TryExtract - Set return storage id: " + storageId, 2);
+
+                        if (!trashItems && returnStorageId != uint.MaxValue)
+                            break;
+                    }
+
+                }
+
+                if (countOnly || removeStorageIdList.Count == 0 || returnStorageId == uint.MaxValue) // && !trashItems)
+                {
+                    Logging.LogMessage(this, "TryExtract - Return count/nothing", 2);
                     returnedAmount = amount;
                     returnedCubeType = 0;
                     returnedCubeValue = 0;
@@ -1433,6 +1517,7 @@ namespace Tricky.ExtraStorageHoppers
                 switch (inventoryStack.ItemType)
                 {
                     case ItemType.ItemCubeStack:
+                        Logging.LogMessage(this, "TryExtract - Return ItemCubeStack", 2);
                         ItemCubeStack itemCubeStack = (ItemCubeStack) inventoryStack.Item;
                         int extractedCubeAmount = Math.Min(itemCubeStack.mnAmount, maximumAmount);
                         returnedCubeType = itemCubeStack.mCubeType;
@@ -1443,6 +1528,7 @@ namespace Tricky.ExtraStorageHoppers
                         break;
 
                     case ItemType.ItemStack:
+                        Logging.LogMessage(this, "TryExtract - Return ItemStack", 2);
                         ItemStack itemStack = (ItemStack) inventoryStack.Item;
                         int extractedStackAmount = Math.Min(itemStack.mnAmount, maximumAmount);
                         returnedCubeType = 0;
@@ -1453,6 +1539,7 @@ namespace Tricky.ExtraStorageHoppers
                         break;
 
                     default:
+                        Logging.LogMessage(this, "TryExtract - Return sub-stack item", 2);
                         returnedCubeType = 0;
                         returnedCubeValue = 0;
                         returnedAmount = 1;
@@ -1460,16 +1547,20 @@ namespace Tricky.ExtraStorageHoppers
                         break;
                 }
 
-                if (trashItems)
+
+                /* trashItems flag is pointless bullshit...we can ignore it
+
+                    if (trashItems)
                     foreach (uint storageId in removeStorageIdList)
                     {
+                        Logging.LogMessage("TryExtract - Trash items for storage id:"+storageId);
                         inventoryStack = mInventory[storageId];
-                        inventoryStack.Item = null;
                         inventoryStack.Clear();
-                    }
+                    }*/
             }
 
             CountFreeSlots();
+            Logging.LogMessage(this, "Recount used capacity:" + UsedCapacity, 2);
             MarkDirtyDelayed();
             RequestImmediateNetworkUpdate();
             return true;
@@ -1910,6 +2001,7 @@ namespace Tricky.ExtraStorageHoppers
                     }
                 }
 
+                Permissions = (eHopperPermissions) reader.ReadInt32();
                 VacuumOn = reader.ReadBoolean();
                 reader.ReadBoolean();
                 HivemindFeedingOn = reader.ReadBoolean();
@@ -1978,7 +2070,10 @@ namespace Tricky.ExtraStorageHoppers
             }
             catch (Exception e)
             {
-                Logging.LogException(this, e);
+                Logging.LogException(this, e, null, "Resetting to defaults");
+                VacuumOn = false;
+                ContentSharingOn = false;
+                HivemindFeedingOn = false;
             }
         }
 
@@ -2005,7 +2100,7 @@ namespace Tricky.ExtraStorageHoppers
                 if (hasLastItemAdded)
                     mLastItemAdded = ItemFile.DeserialiseItem(reader);
 
-                if (mLastItemAdded!=null && !mSegment.mbValidateOnly && WorldScript.mbHasPlayer)
+                if (mLastItemAdded != null && !mSegment.mbValidateOnly && WorldScript.mbHasPlayer)
                     mLastItemAddedText = WorldScript.mLocalPlayer.mResearch == null || !WorldScript.mLocalPlayer.mResearch.IsKnown(mLastItemAdded)
                         ? "Unknown Material"
                         : ItemManager.GetItemName(mLastItemAdded);
@@ -2329,6 +2424,7 @@ namespace Tricky.ExtraStorageHoppers
                             if (nextPermission == eHopperPermissions.eNumPermissions)
                                 nextPermission = eHopperPermissions.AddAndRemove;
                         }
+
                         SetPermissions(nextPermission, true, true);
                         UIManager.ForceNGUIUpdate = 0.1f;
                     }

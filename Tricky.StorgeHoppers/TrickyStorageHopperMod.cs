@@ -29,30 +29,11 @@ namespace Tricky.ExtraStorageHoppers
         /// </summary>
         private static readonly Dictionary<ushort, HopperTypeData> mHopperTypeDataByCubeValue = new Dictionary<ushort, HopperTypeData>();
 
+        /// <summary>
+        /// Indicates if recipe descriptions were updated.
+        /// </summary>
+        private static bool mRecipeDescriptionsUpdated;
 
-        //******************** Backup TerrainData and ManufacturerRecipes files ********************
-        //For people with custom hoppers
-        public void BackupFiles()
-        {
-            try
-            {
-/*                string xmlDatPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + Path.DirectorySeparatorChar + "Xml";
-                string backupPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + Path.DirectorySeparatorChar+ "Backup";
-                string folderName = DateTime.Today.Month + "-" + DateTime.Today.Day + "\\";
-                string backupTrueFolder = backupPath + folderName;
-                if (!Directory.Exists(backupTrueFolder))
-                {
-                    Directory.CreateDirectory(backupPath);
-                    File.Copy(xmlDatPath + "TerrainData.xml", backupTrueFolder + "TerrainData.xml");
-                    File.Copy(xmlDatPath + "ManufacturerRecipes.xml", backupTrueFolder + "ManufacturerRecipes.xml");
-                }*/
-            }
-            catch (Exception e)
-            {
-                Logging.LogException(e);
-            }
-        }
-        
 
         /// <summary>
         /// Handle Register.
@@ -60,11 +41,10 @@ namespace Tricky.ExtraStorageHoppers
         public override ModRegistrationData Register()
         {
             Logging.ModName = "Tricky Storage Hoppers";
+            Logging.LoggingLevel = 0;
 
             try
             {
-                BackupFiles();
-
                 //Registers my mod, so FC knows what to load
                 ModRegistrationData modRegistrationData = new ModRegistrationData();
                 modRegistrationData.RegisterEntityHandler(MOD_KEY);
@@ -133,11 +113,8 @@ namespace Tricky.ExtraStorageHoppers
 
                     mHopperTypeDataByCubeValue[dataValueEntry.Value] =
                         new HopperTypeData(dataValueEntry.Name, capacity, new Color(red, green, blue), isOneType);
-
-                    // Set hopper description.
-                    dataValueEntry.Description = dataValueEntry.Description.Replace("{0}",
-                        "up to " + capacity + " " + (isOneType ? "of one type" : (capacity > 1 ? "resources" : "resource")));
                 }
+
 
                 return modRegistrationData;
             }
@@ -174,6 +151,44 @@ namespace Tricky.ExtraStorageHoppers
             {
                 Logging.LogException(e);
             }
+        }
+
+
+        /// <summary>
+        /// Handle LowFrequencyUpdate.
+        /// </summary>
+        public override void LowFrequencyUpdate()
+        {
+
+            try
+            {
+                if (mRecipeDescriptionsUpdated)
+                    return;
+
+                // Update recipe descriptions.
+                foreach (RecipeSet recipeSet in CraftData.mRecipeSets)
+                {
+                    List<CraftData> recipeList = CraftData.GetRecipesForSet(recipeSet.Id);
+                    foreach (CraftData recipe in recipeList)
+                    {
+                        if (recipe.CraftableCubeType != HopperCubeType)
+                            continue;
+                        if (!mHopperTypeDataByCubeValue.TryGetValue(recipe.CraftableCubeValue, out HopperTypeData hopperTypeData))
+                            continue;
+                        recipe.Description = recipe.Description.Replace("{0}",
+                            "up to " + hopperTypeData.Capacity + " " + (hopperTypeData.IsOneType ? "of one type" : (hopperTypeData.Capacity > 1 ? "resources" : "resource")));
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Logging.LogException(e, "Updated manufacturing plant recipe descriptions");
+            }
+            finally
+            {
+                mRecipeDescriptionsUpdated = true;
+            }
+
         }
     }
 }

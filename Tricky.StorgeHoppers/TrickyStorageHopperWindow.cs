@@ -28,6 +28,7 @@ namespace Tricky.ExtraStorageHoppers
         public const string COMMAND_STORE_ITEMS = "StoreItems";
 
         // Label and slot constants.
+        public const string DROP_ITEM_SLOT = "DropItemSlot";
         public const string ITEM_SLOT = "ItemSlot";
         public const string LABEL_STACK_SIZE = "StackSize";
         public const string LABEL_USED_STORAGE = "UsedStorage";
@@ -113,22 +114,29 @@ namespace Tricky.ExtraStorageHoppers
 
             }
 
-            yPosition += 50;
-            manager.AddBigLabel(LABEL_USED_STORAGE, "8888/8888", Color.white, 10, yPosition);
 
             yPosition += 50;
-            mDisplayedItemBaseList = hopper.GetInventory();
-            mSlotCount = hopper.mValue == 0 ? 0 : mDisplayedItemBaseList.Count;
-            int columnSize = 60;
-            for (int slotIndex = 0; slotIndex <= mSlotCount; slotIndex++)
+            manager.AddIcon(DROP_ITEM_SLOT, "empty", Color.white, 10, yPosition);
+            manager.AddBigLabel("DropSlotLabel", "Drop Here To "+ (hopper.mValue==0 ? "Destroy": "Store"), Color.white, 70, yPosition+5);
+
+            if (hopper.mValue != 0)
             {
-                int row = slotIndex / 5;
-                int column = slotIndex % 5;
-                manager.AddIcon(ITEM_SLOT + slotIndex, "empty", Color.white, column * columnSize + 10, row * 60 + yPosition);
-                manager.AddLabel(GenericMachineManager.LabelType.OneLineHalfWidth, LABEL_STACK_SIZE + slotIndex, string.Empty, Color.white, false, column * columnSize + 33,
-                    row * 60 + yPosition + 22);
-            }
+                yPosition += 65;
+                manager.AddBigLabel(LABEL_USED_STORAGE, "8888/8888", Color.white, 10, yPosition);
 
+                yPosition += 45;
+                mDisplayedItemBaseList = hopper.GetInventory();
+                mSlotCount = hopper.mValue == 0 ? 0 : mDisplayedItemBaseList.Count;
+                int columnSize = 60;
+                for (int slotIndex = 0; slotIndex < mSlotCount; slotIndex++)
+                {
+                    int row = slotIndex / 5;
+                    int column = slotIndex % 5;
+                    manager.AddIcon(ITEM_SLOT + slotIndex, "empty", Color.white, column * columnSize + 10, row * 60 + yPosition);
+                    manager.AddLabel(GenericMachineManager.LabelType.OneLineHalfWidth, LABEL_STACK_SIZE + slotIndex, string.Empty, Color.white, false, column * columnSize + 33,
+                        row * 60 + yPosition + 22);
+                }
+            }
 
             GenericMachinePanelHelper.ResetScroll();
             mDirty = true;
@@ -197,26 +205,18 @@ namespace Tricky.ExtraStorageHoppers
             if (hopper.mValue == 0)
                 manager.UpdateLabel(LABEL_HIVEMIND_FEEDING_STATE, "Hivemind Feeding: " + (hopper.HivemindFeedingOn ? "On" : "Off"), Color.white);
             else
+            {
                 manager.UpdateLabel(LABEL_CONTENT_SHARING_STATE, "Content Sharing: " + (hopper.ContentSharingOn ? "On" : "Off"), Color.white);
-
-            manager.UpdateLabel(LABEL_USED_STORAGE, hopper.mValue > 0 ? string.Concat("Used ", hopper.UsedCapacity, "/", hopper.TotalCapacity) : 
-                    "Void Drop Box",
-                Color.white);
-
+                manager.UpdateLabel(LABEL_USED_STORAGE, string.Concat("Used ", hopper.UsedCapacity, "/", hopper.TotalCapacity), Color.white);
+            }
+            
             // Leave first slot as the empty to drop new stuff.
-            int slotIndex = 1;
+            int slotIndex = 0;
             List<ItemBase> itemBaseList = hopper.GetInventory();
             for(int index=0; index < mSlotCount; index++)
             {
                 ItemBase itemBase = index < itemBaseList.Count ? itemBaseList[index] : null;
                 int currentStackSize = itemBase != null ? ItemManager.GetCurrentStackSize(itemBase) : 0;
-
-                if (currentStackSize==0)
-                {
-                    manager.UpdateIcon(ITEM_SLOT + slotIndex, "empty", Color.white);
-                    manager.UpdateLabel(LABEL_STACK_SIZE + slotIndex, string.Empty, Color.white);
-                    continue;
-                }
 
                 string itemIcon = ItemManager.GetItemIcon(itemBase);
                 manager.UpdateIcon(ITEM_SLOT + slotIndex, itemIcon, Color.white);
@@ -316,21 +316,24 @@ namespace Tricky.ExtraStorageHoppers
 
         public override void HandleItemDrag(string name, ItemBase draggedItem, DragAndDropManager.DragRemoveItem dragDelegate, SegmentEntity targetEntity)
         {
-            if (!(targetEntity is TrickyStorageHopper hopper))
+            if (!(targetEntity is TrickyStorageHopper hopper) || draggedItem==null)
                 return;
 
-            ItemBase itemForSlot = GetItemForSlot(name);
-            if (itemForSlot != null && draggedItem.mnItemID != itemForSlot.mnItemID ||
-                !hopper.CheckItemAllowed(draggedItem.ToStorageId()) || hopper.IsFull() ||
-                name != ITEM_SLOT + mDisplayedItemBaseList.Count)
+            ItemBase itemForSlot = null;
+            if (name != DROP_ITEM_SLOT)
+            {
+                itemForSlot = GetItemForSlot(name);
+                if (itemForSlot != null && draggedItem.mnItemID != itemForSlot.mnItemID)
+                    return;
+            }
+
+            if (!hopper.CheckItemAllowed(draggedItem.ToStorageId()) || hopper.IsFull())
                 return;
 
             ItemBase itemBase = ItemManager.CloneItem(draggedItem);
             int currentStackSize = ItemManager.GetCurrentStackSize(itemBase);
             if (hopper.RemainingCapacity < currentStackSize)
-            {
                 ItemManager.SetItemCount(itemBase, hopper.RemainingCapacity);
-            }
 
             StoreItems(WorldScript.mLocalPlayer, hopper, itemBase);
             InventoryPanelScript.mbDirty = true;
@@ -493,12 +496,6 @@ namespace Tricky.ExtraStorageHoppers
         /// <returns>True if item was stored successfully, otherwise false.</returns>
         public static bool StoreItems(Player player, TrickyStorageHopper hopper, ItemBase itemToStore)
         {
-            if (player == WorldScript.mLocalPlayer && !WorldScript.mLocalPlayer.mInventory.RemoveItemByExample(itemToStore, true))
-            {
-                Logging.LogMessage("Player " + player.mUserName + " doesn't have " + itemToStore);
-                return false;
-            }
-
             if (!hopper.CheckItemAllowed(itemToStore.ToStorageId()))
             {
                 if (player.mbIsLocalPlayer)
@@ -508,6 +505,12 @@ namespace Tricky.ExtraStorageHoppers
                     AudioHUDManager.instance.HUDFail();
                 }
 
+                return false;
+            }
+
+            if (player == WorldScript.mLocalPlayer && !WorldScript.mLocalPlayer.mInventory.RemoveItemByExample(itemToStore, true))
+            {
+                Logging.LogMessage("Player " + player.mUserName + " doesn't have " + itemToStore);
                 return false;
             }
 
@@ -552,6 +555,8 @@ namespace Tricky.ExtraStorageHoppers
             else mNetworkRedraw = true;
 
             player.mInventory.VerifySuitUpgrades();
+            SurvivalHotBarManager.MarkAsDirty();
+            SurvivalHotBarManager.MarkContentDirty();
             if (!WorldScript.mbIsServer)
                 NetworkManager.instance.SendInterfaceCommand(nameof(TrickyStorageHopperWindow), nameof(StoreItems), null, itemToStore, hopper, 0.0f);
             return true;
