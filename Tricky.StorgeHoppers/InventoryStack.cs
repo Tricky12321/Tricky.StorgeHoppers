@@ -409,30 +409,38 @@ namespace Tricky.ExtraStorageHoppers
             else
             {
                 int itemCount = reader.ReadUInt16();
+                Logging.LogMessage("Sub-stack count: "+itemCount, 1);
                 switch (itemType)
                 {
                     case ItemType.ItemCharge:
-                        for (int itemIndex = 0; itemIndex < itemCount; itemCount++)
+                        for (int itemIndex = 0; itemIndex < itemCount; itemIndex++)
                         {
                             int chargeValue = reader.ReadInt32();
-                            inventoryStack.mChargeSubStack[chargeValue] = reader.ReadUInt16();
+                            ushort amount = reader.ReadUInt16();
+                            inventoryStack.mChargeSubStack[chargeValue] = amount;
+                            inventoryStack.mSubStackCount += amount;
                         }
 
                         break;
 
                     case ItemType.ItemDurability:
-                        for (int itemIndex = 0; itemIndex < itemCount; itemCount++)
+                        for (int itemIndex = 0; itemIndex < itemCount; itemIndex++)
                         {
                             ushort durabilityValue = reader.ReadUInt16();
-                            inventoryStack.mDurabilitySubStack[durabilityValue] = reader.ReadUInt16();
+                            ushort amount = reader.ReadUInt16();
+                            Logging.LogMessage("Durability Value: " + durabilityValue+" Amount: "+ amount, 1);
+                            inventoryStack.mDurabilitySubStack[durabilityValue] = amount;
+                            inventoryStack.mSubStackCount += amount;
                         }
 
                         break;
 
                     case ItemType.ItemLocation:
-                        for (int itemIndex = 0; itemIndex < itemCount; itemCount++)
+                        for (int itemIndex = 0; itemIndex < itemCount; itemIndex++)
+                        {
                             inventoryStack.mLocationSubStack.Add((ItemLocation) ItemFile.DeserialiseItem(reader));
-
+                            inventoryStack.mSubStackCount++;
+                        }
                         break;
 
                 }

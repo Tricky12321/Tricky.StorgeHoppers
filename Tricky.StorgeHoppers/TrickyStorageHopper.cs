@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using UnityEngine;
 using Random = System.Random;
@@ -678,16 +679,24 @@ namespace Tricky.ExtraStorageHoppers
                 {
                     case eHopperPermissions.Locked:
                         return;
-                    case eHopperPermissions.RemoveOnly:
-                        return;
+//                    case eHopperPermissions.RemoveOnly:
+                    //                      return;
                     default:
                         if (machineInterface.RemainingCapacity <= 1)
                             return;
-                        if (machineInterface.UsedCapacity < UsedCapacity - 1)
+
+                        double targetPercent = (double) machineInterface.UsedCapacity / machineInterface.TotalCapacity * 100;
+                        double sourcePercent = (double) UsedCapacity / TotalCapacity * 100;
+
+                        if (targetPercent < sourcePercent)
                         {
-                            GetSpecificCube(eHopperRequestType.eAny, false, out ushort cubeType, out ushort cubeValue);
-                            if (cubeType != 0)
-                                machineInterface.TryInsert(this, cubeType, cubeValue, 1);
+                            if (TryExtractAny(this, 1, out ItemBase shareItem))
+                                if (!machineInterface.TryInsert(this, shareItem))
+                                    AddItem(shareItem);
+
+//                            GetSpecificCube(eHopperRequestType.eAny, false, out ushort cubeType, out ushort cubeValue);
+                            //                          if (cubeType != 0)
+                            //                            machineInterface.TryInsert(this, cubeType, cubeValue, 1);
                         }
 
                         continue;
@@ -1264,10 +1273,12 @@ namespace Tricky.ExtraStorageHoppers
 
                 if (RemainingCapacity <= 0)
                     return false;
-                if (item != null)
-                    AddItem(item);
-                else
-                    AddCube(cubeType, cubeValue);
+
+                var result = item != null ? AddItem(item) : AddCube(cubeType, cubeValue);
+
+                if (!result)
+                    return false;
+
                 if (sendImmediateNetworkUpdate)
                     RequestImmediateNetworkUpdate();
                 return true;
@@ -2332,7 +2343,7 @@ namespace Tricky.ExtraStorageHoppers
 
 
         /// <summary>
-        /// Sets the one-type hopper item.
+        /// Sets the one-type hopper item from an ItemBase.
         /// </summary>
         /// <param name="itemBase">ItemBase to be used.</param>
         /// <param name="audioNotify">Indicates if audio notifications should occur.</param>
@@ -2350,9 +2361,33 @@ namespace Tricky.ExtraStorageHoppers
                 AudioHUDManager.instance.HUDIn();
 
             if (!WorldScript.mbIsServer)
-                NetworkManager.instance.SendInterfaceCommand(nameof(TrickyStorageHopperWindow), TrickyStorageHopperWindow.COMMAND_SET_ONE_TYPE_ITEM, null, itemBase, this, 0.0f);
+                NetworkManager.instance.SendInterfaceCommand(nameof(TrickyStorageHopperWindow), TrickyStorageHopperWindow.COMMAND_SET_ONE_TYPE_STORAGE_ID, mOneTypeHopperStorageId.ToString(),
+                    null, this, 0.0f);
         }
 
+
+        /// <summary>
+        /// Sets the one-type hopper item from a storage Id.
+        /// </summary>
+        /// <param name="storageId">Storage Id.</param>
+        /// <param name="audioNotify">Indicates if audio notifications should occur.</param>
+        public void SetOneTypeItem(uint storageId, bool audioNotify)
+        {
+            if (!OneTypeHopper)
+                return;
+
+            mOneTypeHopperStorageId = storageId;
+            OneTypeItemName = ItemBaseExtensions.GetStorageIdName(storageId);
+            mForceTextUpdate = true;
+            MarkDirtyDelayed();
+
+            if (audioNotify)
+                AudioHUDManager.instance.HUDIn();
+
+            if (!WorldScript.mbIsServer)
+                NetworkManager.instance.SendInterfaceCommand(nameof(TrickyStorageHopperWindow), TrickyStorageHopperWindow.COMMAND_SET_ONE_TYPE_STORAGE_ID, mOneTypeHopperStorageId.ToString(),
+                    null, this, 0.0f);
+        }
 
         /// <summary>
         /// Sets the retake debounce timer.
@@ -2944,7 +2979,9 @@ namespace Tricky.ExtraStorageHoppers
 
             if (mOneTypeHopperStorageId == 0)
             {
-                mOneTypeHopperStorageId = storageId;
+                SetOneTypeItem(storageId, false);
+                if (!PersistentSettings.mbHeadlessServer)
+                    FloatingCombatTextManager.instance.QueueText(mnX, mnY + 1L, mnZ, 0.75f, "One-type auto set to " + OneTypeItemName, Color.red, 1.5f);
                 return true;
             }
 

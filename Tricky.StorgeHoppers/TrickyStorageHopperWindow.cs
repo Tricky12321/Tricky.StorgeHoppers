@@ -23,7 +23,7 @@ namespace Tricky.ExtraStorageHoppers
         public const string COMMAND_SET_VACUUM = "SetVacuum";
         public const string COMMAND_SET_CONTENT_SHARING = "SetContentSharing";
         public const string COMMAND_SET_HIVEMIND_FEEDING = "SetHivemindFeeding";
-        public const string COMMAND_SET_ONE_TYPE_ITEM = "SetOneTypeItem";
+        public const string COMMAND_SET_ONE_TYPE_STORAGE_ID = "SetOneTypeStorageId";
         public const string COMMAND_TAKE_ITEMS = "TakeItems";
         public const string COMMAND_STORE_ITEMS = "StoreItems";
 
@@ -220,7 +220,7 @@ namespace Tricky.ExtraStorageHoppers
 
                 string itemIcon = ItemManager.GetItemIcon(itemBase);
                 manager.UpdateIcon(ITEM_SLOT + slotIndex, itemIcon, Color.white);
-                manager.UpdateLabel(LABEL_STACK_SIZE + slotIndex, currentStackSize.ToString("###"), Color.white);
+                manager.UpdateLabel(LABEL_STACK_SIZE + slotIndex, currentStackSize.ToString("###").PadLeft(3), Color.white);
                 slotIndex++;
             }
 
@@ -597,8 +597,9 @@ namespace Tricky.ExtraStorageHoppers
                         if (int.TryParse(networkInterfaceCommand.payload, out value))
                             hopper.SetHivemindFeeding(value == 1, false);
                         break;
-                    case COMMAND_SET_ONE_TYPE_ITEM:
-                        hopper.SetOneTypeItem(networkInterfaceCommand.itemContext, false);
+                    case COMMAND_SET_ONE_TYPE_STORAGE_ID:
+                        if (uint.TryParse(networkInterfaceCommand.payload, out uint storageId))
+                            hopper.SetOneTypeItem(storageId, false);
                         break;
                     case COMMAND_TAKE_ITEMS:
                         TakeItems(player, hopper, networkInterfaceCommand.itemContext);
