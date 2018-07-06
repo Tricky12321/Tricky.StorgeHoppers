@@ -440,7 +440,7 @@ namespace Tricky.ExtraStorageHoppers
                     CheckConsumer(index, mCheckSegments[index], cube, x, y, z);
 
                 // Check for neighboring hoppers.
-                if (mHopperReBalanceCycle % 10 == 0)
+                //if (mHopperReBalanceCycle % 10 == 0)
                     CheckNeighborHopper(x, y, z, mCheckSegments[index], cube);
             }
         }
@@ -664,7 +664,6 @@ namespace Tricky.ExtraStorageHoppers
         {
             // If content sharing is off, permissions are locked, or there is insufficient quantity to share, or the cubes is not stored then leave.
             if (!ContentSharingOn || Permissions == eHopperPermissions.Locked ||
-                //Permissions == eHopperPermissions.AddOnly || Permissions == eHopperPermissions.Locked ||
                 UsedCapacity <= 2 || !CubeHelper.HasEntity(lCube))
                 return;
 
@@ -679,8 +678,6 @@ namespace Tricky.ExtraStorageHoppers
                 {
                     case eHopperPermissions.Locked:
                         return;
-//                    case eHopperPermissions.RemoveOnly:
-                    //                      return;
                     default:
                         if (machineInterface.RemainingCapacity <= 1)
                             return;
@@ -693,12 +690,7 @@ namespace Tricky.ExtraStorageHoppers
                             if (TryExtractAny(this, 1, out ItemBase shareItem))
                                 if (!machineInterface.TryInsert(this, shareItem))
                                     AddItem(shareItem);
-
-//                            GetSpecificCube(eHopperRequestType.eAny, false, out ushort cubeType, out ushort cubeValue);
-                            //                          if (cubeType != 0)
-                            //                            machineInterface.TryInsert(this, cubeType, cubeValue, 1);
                         }
-
                         continue;
                 }
             }
