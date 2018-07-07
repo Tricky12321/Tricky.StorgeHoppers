@@ -196,8 +196,8 @@
 		<Custom>
 		    <Value key="Tricky.MaxStorage" value="500" />
 		    <Value key="Tricky.ColorR" value="1" />
-		    <Value key="Tricky.ColorG" value="1" />
-		    <Value key="Tricky.ColorB" value="1" />
+		    <Value key="Tricky.ColorG" value="0.1" />
+		    <Value key="Tricky.ColorB" value="0.1" />
 		    <Value key="Tricky.HopperName" value="500 Slot Storage Hopper" /> 
 		    <Value key="Tricky.OT" value="True" /> 
 		</Custom>

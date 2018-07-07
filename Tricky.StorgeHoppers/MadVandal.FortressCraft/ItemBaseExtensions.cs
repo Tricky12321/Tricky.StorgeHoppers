@@ -40,7 +40,7 @@
                 return ItemManager.GetItemName((int) storageId);
 
             ushort cubeType = (ushort) (storageId >> 16);
-            ushort cubeValue = (ushort) (storageId & 0xFF);
+            ushort cubeValue = (ushort) (storageId & 0xFFFF);
             return TerrainData.GetNameForValue(cubeType, cubeValue);
         }
 
@@ -63,7 +63,7 @@
         /// <returns>Cube value.</returns>
         public static ushort GetCubeValue(uint storageId)
         {
-            return (ushort)(storageId & 0xFF);
+            return (ushort)(storageId & 0xFFFF);
         }
     }
 }
