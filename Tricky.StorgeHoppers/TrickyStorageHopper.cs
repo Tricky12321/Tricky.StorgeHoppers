@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Remoting.Messaging;
 using System.Text;
 using UnityEngine;
 using Random = System.Random;
@@ -20,11 +19,6 @@ namespace Tricky.ExtraStorageHoppers
         /// Vacuum range constant.
         /// </summary>
         public const int VACUUM_RANGE = 16;
-
-        /// <summary>
-        /// Number of hopper cube re-balancing loops performed with each low frequency thread pass.
-        /// </summary>
-        public const int HOPPER_CUBE_RE_BALANCE_LOOPS = 10;
 
         /// <summary>
         /// Number of segment cube checks for inputs and outputs.
@@ -441,7 +435,7 @@ namespace Tricky.ExtraStorageHoppers
 
                 // Check for neighboring hoppers.
                 //if (mHopperReBalanceCycle % 10 == 0)
-                    CheckNeighborHopper(x, y, z, mCheckSegments[index], cube);
+                CheckNeighborHopper(x, y, z, mCheckSegments[index], cube);
             }
         }
 
@@ -667,32 +661,95 @@ namespace Tricky.ExtraStorageHoppers
                 UsedCapacity <= 2 || !CubeHelper.HasEntity(lCube))
                 return;
 
-            // Check for a storage machine interface at the position. If none then leave.
-            if (!(checkSegment.SearchEntity(checkX, checkY, checkZ) is StorageMachineInterface machineInterface))
+            // Check for a Tricky Hopper at the position. If none then leave.
+            if (!(checkSegment.SearchEntity(checkX, checkY, checkZ) is TrickyStorageHopper machineInterface))
                 return;
 
-            // Perform re-balance loops.
-            for (int index = 0; index < HOPPER_CUBE_RE_BALANCE_LOOPS && UsedCapacity > 2; ++index)
+            // If neighbor is locked then leave.
+            if (machineInterface.GetPermissions() == eHopperPermissions.Locked)
+                return;
+
+            // Get target/source percents. If this hopper is lower then leave.
+            double targetPercent = (double) machineInterface.UsedCapacity / machineInterface.TotalCapacity;
+            double sourcePercent = (double) UsedCapacity / TotalCapacity;
+            double percentDelta = (sourcePercent - targetPercent) * 0.5f;
+            Logging.LogMessage(this, "Target Percent: " + targetPercent + " Source Percent:" + sourcePercent, 2);
+            if (sourcePercent <= targetPercent)
+                return;
+
+            // Calculate transfer amount. If zero or less then leave.
+            int transferAmount = (int) (percentDelta * machineInterface.TotalCapacity);
+            if (transferAmount < 1)
             {
-                switch (machineInterface.GetPermissions())
+                Logging.LogMessage(this, "Transfer Amount: " + transferAmount + " - Leaving", 2);
+                return;
+            }
+
+            // Transfer amount cannot exceed target remaining capacity.
+            if (transferAmount > machineInterface.RemainingCapacity)
+                transferAmount = machineInterface.RemainingCapacity;
+            Logging.LogMessage(this, "Transfer Amount: " + transferAmount, 2);
+
+            // If target is one type hopper that has it's type set then attempt balance on the one type and leave.
+            if (machineInterface.OneTypeHopper && machineInterface.mOneTypeHopperStorageId > 0)
+            {
+                if (machineInterface.mOneTypeHopperStorageId > ushort.MaxValue)
                 {
-                    case eHopperPermissions.Locked:
+                    ushort cubeType = ItemBaseExtensions.GetCubeType(machineInterface.mOneTypeHopperStorageId);
+                    ushort cubeValue = ItemBaseExtensions.GetCubeValue(machineInterface.mOneTypeHopperStorageId);
+
+                    Logging.LogMessage(this, "Attempt TryExtractCubes Cube:" + cubeType + " Value:" + cubeValue, 2);
+                    if (!TryExtractCubes(this, cubeType, cubeValue, transferAmount))
                         return;
-                    default:
-                        if (machineInterface.RemainingCapacity <= 1)
-                            return;
 
-                        double targetPercent = (double) machineInterface.UsedCapacity / machineInterface.TotalCapacity * 100;
-                        double sourcePercent = (double) UsedCapacity / TotalCapacity * 100;
-
-                        if (targetPercent < sourcePercent)
-                        {
-                            if (TryExtractAny(this, 1, out ItemBase shareItem))
-                                if (!machineInterface.TryInsert(this, shareItem))
-                                    AddItem(shareItem);
-                        }
-                        continue;
+                    if (!machineInterface.TryInsert(this, cubeType, cubeValue, transferAmount))
+                        TryInsert(this, cubeType, cubeValue, transferAmount);
                 }
+                else
+                {
+                    while (transferAmount > 0)
+                    {
+                        Logging.LogMessage(this, "TryExtractCubes OT Items", 2);
+                        if (!TryExtract(eHopperRequestType.eAny, (int) machineInterface.mOneTypeHopperStorageId, 0, 0, false, 1, transferAmount, false, false, false, false,
+                                out ItemBase shareItem, out ushort _, out ushort _, out int amount) || amount == 0)
+                        {
+                            Logging.LogMessage(this, "TryExtractCubes OT Items Failed", 2);
+                            return;
+                        }
+
+                        if (!machineInterface.TryInsert(this, shareItem))
+                        {
+                            Logging.LogMessage(this, "TryInsert OT Items Failed", 2);
+                            AddItem(shareItem);
+                            return;
+                        }
+
+                        transferAmount -= amount;
+                    }
+                }
+
+                return;
+            }
+
+            // Loop transfer of any kind amount.
+            while (transferAmount > 0)
+            {
+                if (!TryExtract(eHopperRequestType.eAny, -1, 0, 0, false, 1, transferAmount, false, false, false, true,
+                        out ItemBase shareItem, out ushort _, out ushort _, out int amount) || amount == 0)
+                    return;
+
+                Logging.LogMessage(this, "Share TryExtract got: " + amount, 2);
+                if (!machineInterface.TryInsert(this, shareItem))
+                {
+                    Logging.LogMessage(this, "Share TryInsert failed : " + amount, 2);
+                    AddItem(shareItem);
+                    break;
+                }
+
+                transferAmount -= amount;
+                Logging.LogMessage(this, "Share Transfer Amount Left: " + transferAmount, 2);
+                if (machineInterface.OneTypeHopper)
+                    break;
             }
         }
 
@@ -707,7 +764,6 @@ namespace Tricky.ExtraStorageHoppers
                 lock (mInventory)
                 {
                     int originalStorageUsed = UsedCapacity;
-                    Logging.LogMessage(this, "CountFreeSlots - Original used", 2);
                     int newUsedCapacity = 0;
                     foreach (InventoryStack inventoryStack in mInventory.Values)
                         newUsedCapacity += inventoryStack.Count;
@@ -736,52 +792,53 @@ namespace Tricky.ExtraStorageHoppers
         {
             Logging.LogMessage(this, "AddItem Started for " + (itemToAdd == null ? "<NULL>" : itemToAdd.GetDisplayString()), 2);
 
-            // If null then return as successful (even though it did nothing). Not sure if this is needed but mimics vanilla to be safe.
-            if (itemToAdd == null)
-                return true;
-
-            // If this is a void hopper then handle handle hivemind feeding and leave without actually storing the object,
-            if (mValue == 0)
+            lock (mInventory)
             {
-                int amount = itemToAdd.GetAmount();
-                if (HivemindFeedingOn && mClosestHiveEntity != null)
+
+                // If null then return as successful (even though it did nothing). Not sure if this is needed but mimics vanilla to be safe.
+                if (itemToAdd == null)
+                    return true;
+
+                // If this is a void hopper then handle handle hivemind feeding and leave without actually storing the object,
+                if (mValue == 0)
                 {
-                    for (int index = 0; index < amount; index++)
-                        mClosestHiveEntity.AddItem(itemToAdd);
-                    Logging.LogMessage(this, "Fed hivemind", 2);
+                    int amount = itemToAdd.GetAmount();
+                    if (HivemindFeedingOn && mClosestHiveEntity != null)
+                    {
+                        for (int index = 0; index < amount; index++)
+                            mClosestHiveEntity.AddItem(itemToAdd);
+                        Logging.LogMessage(this, "Fed hivemind", 2);
+                    }
+                    else Logging.LogMessage(this, "Cannot feed hivemind until found", 2);
+
+                    mLastItemAdded = itemToAdd;
+                    VoidHopperDeleteCount += amount;
+
+                    mLastItemAdded = itemToAdd;
+                    mLastItemAddedText = !WorldScript.mLocalPlayer.mResearch.IsKnown(itemToAdd)
+                        ? "Unknown Material"
+                        : ItemManager.GetItemName(itemToAdd);
                 }
-                else Logging.LogMessage(this, "Cannot feed hivemind until found", 2);
-
-                mLastItemAdded = itemToAdd;
-                VoidHopperDeleteCount += amount;
-
-                mLastItemAdded = itemToAdd;
-                mLastItemAddedText = !WorldScript.mLocalPlayer.mResearch.IsKnown(itemToAdd)
-                    ? "Unknown Material"
-                    : ItemManager.GetItemName(itemToAdd);
-            }
-            else
-            {
-                // If item not allowed (wrong type for one type hopper) then fail.
-                if (!CheckItemAllowed(itemToAdd.ToStorageId()))
+                else
                 {
-                    Logging.LogMessage(this, "CheckItemAllowed Failed", 2);
-                    return false;
-                }
+                    // If item not allowed (wrong type for one type hopper) then fail.
+                    if (!CheckItemAllowed(itemToAdd.ToStorageId()))
+                    {
+                        Logging.LogMessage(this, "CheckItemAllowed Failed", 2);
+                        return false;
+                    }
 
-                // Ensure free slot count is up to date.
-                CountFreeSlots();
+                    // Ensure free slot count is up to date.
+                    CountFreeSlots();
 
-                // If there is insufficient space then return false.
-                int remainingCapacity = mMaximumCapacity - UsedCapacity;
-                if (remainingCapacity <= 0)
-                {
-                    Logging.LogMessage(this, "Capacity Check Failed", 2);
-                    return false;
-                }
+                    // If there is insufficient space then return false.
+                    int remainingCapacity = mMaximumCapacity - UsedCapacity;
+                    if (remainingCapacity <= 0)
+                    {
+                        Logging.LogMessage(this, "Capacity Check Failed", 2);
+                        return false;
+                    }
 
-                lock (mInventory)
-                {
                     uint storageId = itemToAdd.ToStorageId();
                     Logging.LogMessage(this, "Storage Id:" + storageId, 2);
                     if (!mInventory.TryGetValue(storageId, out InventoryStack inventoryStack))
@@ -867,31 +924,32 @@ namespace Tricky.ExtraStorageHoppers
             }
             else
             {
-                // If no remaining capacity then leave.
-                int remainingCapacity = mMaximumCapacity - UsedCapacity;
-                if (remainingCapacity <= 0)
-                    return false;
-
-                uint storageId = ((uint) cubeType << 16) + cubeValue;
-
-                // If item not allowed (wrong type for one type hopper) then fail.
-                if (!CheckItemAllowed(storageId))
-                    return false;
-
                 lock (mInventory)
                 {
+                    // If no remaining capacity then leave.
+                    int remainingCapacity = mMaximumCapacity - UsedCapacity;
+                    if (remainingCapacity <= 0)
+                        return false;
+
+                    uint storageId = ((uint) cubeType << 16) + cubeValue;
+
+                    // If item not allowed (wrong type for one type hopper) then fail.
+                    if (!CheckItemAllowed(storageId))
+                        return false;
+
                     if (!mInventory.TryGetValue(storageId, out InventoryStack inventoryStack))
                         mInventory[storageId] = inventoryStack = new InventoryStack(ItemType.ItemCubeStack, storageId);
 
                     ((ItemCubeStack) inventoryStack.Item).mnAmount++;
+
+                    mLastItemAdded = new ItemCubeStack(cubeType, cubeValue, 1);
+                    mLastItemAddedText = !WorldScript.mLocalPlayer.mResearch.IsKnown(cubeType, cubeValue)
+                        ? "Unknown Material"
+                        : TerrainData.GetNameForValue(cubeType, cubeValue);
+
+                    CountFreeSlots();
                 }
 
-                mLastItemAdded = new ItemCubeStack(cubeType, cubeValue, 1);
-                mLastItemAddedText = !WorldScript.mLocalPlayer.mResearch.IsKnown(cubeType, cubeValue)
-                    ? "Unknown Material"
-                    : TerrainData.GetNameForValue(cubeType, cubeValue);
-
-                CountFreeSlots();
             }
 
             MarkDirtyDelayed();
@@ -939,14 +997,14 @@ namespace Tricky.ExtraStorageHoppers
         /// <returns>Number of cubes actually removed.</returns>
         internal int RemoveInventoryCube(ushort cubeType, ushort cubeValue, int amount)
         {
-            // If nothing stored then leave.
-            if (UsedCapacity <= 0)
-                return 0;
-
-            uint storageId = ((uint) cubeType << 16) + cubeValue;
-
             lock (mInventory)
             {
+                // If nothing stored then leave.
+                if (UsedCapacity <= 0)
+                    return 0;
+
+                uint storageId = ((uint) cubeType << 16) + cubeValue;
+
                 if (!mInventory.TryGetValue(storageId, out InventoryStack inventoryStack))
                     mInventory[storageId] = inventoryStack = new InventoryStack(ItemType.ItemCubeStack, storageId);
 
@@ -957,14 +1015,9 @@ namespace Tricky.ExtraStorageHoppers
                 if (amount > itemCubeStack.mnAmount)
                     amount = itemCubeStack.mnAmount;
                 itemCubeStack.mnAmount -= amount;
-            }
 
-            RequestImmediateNetworkUpdate();
-            CountFreeSlots();
-            MarkDirtyDelayed();
+                CountFreeSlots();
 
-            lock (mInventory)
-            {
                 if (UsedCapacity == 0)
                 {
                     mLastItemAdded = null;
@@ -972,6 +1025,8 @@ namespace Tricky.ExtraStorageHoppers
                 }
             }
 
+            RequestImmediateNetworkUpdate();
+            MarkDirtyDelayed();
             return amount;
         }
 
@@ -984,14 +1039,14 @@ namespace Tricky.ExtraStorageHoppers
         /// <returns>Number of items actually removed.</returns>
         internal int RemoveInventoryItem(int itemId, int amount)
         {
-            // If nothing stored or no amount to remove then leave.
-            if (UsedCapacity <= 0 || amount <= 0)
-                return 0;
-
-            uint storageId = (uint) itemId;
-
             lock (mInventory)
             {
+                // If nothing stored or no amount to remove then leave.
+                if (UsedCapacity <= 0 || amount <= 0)
+                    return 0;
+
+                uint storageId = (uint) itemId;
+
                 if (!mInventory.TryGetValue(storageId, out InventoryStack inventoryStack))
                     return 0;
 
@@ -1008,25 +1063,21 @@ namespace Tricky.ExtraStorageHoppers
                 }
                 else
                 {
-                    amount = inventoryStack.RemoveSubStackAmount(amount);
-
-                    if (inventoryStack.Count == 0)
+                    amount = inventoryStack.RemoveSubStackAmount(1);
+                    if (amount == 0)
                         return 0;
                 }
-            }
 
-            RequestImmediateNetworkUpdate();
-            CountFreeSlots();
-            MarkDirtyDelayed();
-
-            lock (mInventory)
-            {
+                CountFreeSlots();
                 if (UsedCapacity == 0)
                 {
                     mLastItemAdded = null;
                     mLastItemAddedText = "Empty";
                 }
             }
+
+            RequestImmediateNetworkUpdate();
+            MarkDirtyDelayed();
 
             return amount;
         }
@@ -1041,17 +1092,17 @@ namespace Tricky.ExtraStorageHoppers
         /// <param name="cubeValue">Output cube value removed.</param>
         public void GetSpecificCube(eHopperRequestType requestType, bool manual, out ushort cubeType, out ushort cubeValue)
         {
-            // If the type does not match with cubes or nothing is stored then return with a cube type and value of zero.
-            if (requestType == eHopperRequestType.eNone || requestType == eHopperRequestType.eBarsOnly ||
-                requestType == eHopperRequestType.eAnyCraftedItem || UsedCapacity <= 0)
-            {
-                cubeType = 0;
-                cubeValue = 0;
-                return;
-            }
-
             lock (mInventory)
             {
+                // If the type does not match with cubes or nothing is stored then return with a cube type and value of zero.
+                if (requestType == eHopperRequestType.eNone || requestType == eHopperRequestType.eBarsOnly ||
+                    requestType == eHopperRequestType.eAnyCraftedItem || UsedCapacity <= 0)
+                {
+                    cubeType = 0;
+                    cubeValue = 0;
+                    return;
+                }
+
                 // Loop through each inventory slot.
                 foreach (InventoryStack inventoryStack in mInventory.Values)
                 {
@@ -1102,12 +1153,13 @@ namespace Tricky.ExtraStorageHoppers
         /// <summary>
         /// Finds the next item or cube that can be removed.
         /// </summary>
+        /// <param name="itemType">Output item type to remove. Only valid if true is returned.</param>
         /// <param name="itemId">Output item Id to remove or -1 if none.</param>
         /// <param name="cubeType">Output cube type to remove of 0 if none.</param>
         /// <param name="cubeValue">Output cube value to remove if cubeType is not zero.</param>
         /// <param name="amount">Amount to remove adjusted to balance the players inventory amount.</param>
         /// <returns>True if a matching item or cube was found that can be removed.</returns>
-        internal bool GetNextRemoveInventorySlot(out int itemId, out ushort cubeType, out ushort cubeValue, out int amount)
+        internal bool GetNextRemoveInventorySlot(out ItemType itemType, out int itemId, out ushort cubeType, out ushort cubeValue, out int amount)
         {
             lock (mInventory)
             {
@@ -1121,6 +1173,7 @@ namespace Tricky.ExtraStorageHoppers
                     {
                         case ItemType.ItemCubeStack:
                             ItemCubeStack itemCubeStack = (ItemCubeStack) inventoryStack.Item;
+                            itemType = ItemType.ItemCubeStack;
                             itemId = -1;
                             cubeType = itemCubeStack.mCubeType;
                             cubeValue = itemCubeStack.mCubeValue;
@@ -1129,6 +1182,7 @@ namespace Tricky.ExtraStorageHoppers
 
                         case ItemType.ItemStack:
                             ItemStack itemStack = (ItemStack) inventoryStack.Item;
+                            itemType = ItemType.ItemStack;
                             itemId = itemStack.mnItemID;
                             cubeType = 0;
                             cubeValue = 0;
@@ -1136,6 +1190,7 @@ namespace Tricky.ExtraStorageHoppers
                             return true;
 
                         default:
+                            itemType = inventoryStack.ItemType;
                             itemId = (int) inventoryStack.StorageId;
                             cubeType = 0;
                             cubeValue = 0;
@@ -1146,6 +1201,7 @@ namespace Tricky.ExtraStorageHoppers
             }
 
             // No match found. Set the outputs and return false.
+            itemType = 0;
             itemId = 0;
             cubeType = 0;
             cubeValue = 0;
@@ -1188,18 +1244,19 @@ namespace Tricky.ExtraStorageHoppers
         /// </summary>
         public int UnloadToList(List<ItemBase> cargoList, int amountToExtract)
         {
-            // If nothing stored then leave.
-            if (UsedCapacity <= 0)
-                return 0;
-
-            // Cap the amount at the maximum possible.
-            if (amountToExtract > UsedCapacity)
-                amountToExtract = UsedCapacity;
-
-            // Loop through inventory and remove to the list.
-            int amount = amountToExtract;
+            int amount;
             lock (mInventory)
             {
+                // If nothing stored then leave.
+                if (UsedCapacity <= 0)
+                    return 0;
+
+                // Cap the amount at the maximum possible.
+                if (amountToExtract > UsedCapacity)
+                    amountToExtract = UsedCapacity;
+
+                // Loop through inventory and remove to the list.
+                amount = amountToExtract;
                 foreach (InventoryStack inventoryStack in mInventory.Values)
                 {
                     switch (inventoryStack.ItemType)
@@ -1240,11 +1297,11 @@ namespace Tricky.ExtraStorageHoppers
                         break;
                 }
 
+                CountFreeSlots();
             }
 
             MarkDirtyDelayed();
             RequestImmediateNetworkUpdate();
-            CountFreeSlots();
             return amountToExtract - amount;
         }
 
@@ -1256,25 +1313,27 @@ namespace Tricky.ExtraStorageHoppers
         {
             try
             {
-                if (item == null && cubeType == 0)
+                lock (mInventory)
                 {
-                    if (WorldScript.mbIsServer)
-                        Logging.LogError(this, "TryDeliverItem received with no item\n" + Environment.StackTrace);
-                    return false;
+                    if (item == null && cubeType == 0)
+                    {
+                        if (WorldScript.mbIsServer)
+                            Logging.LogError(this, "TryDeliverItem received with no item\n" + Environment.StackTrace);
+                        return false;
+                    }
+
+                    if (RemainingCapacity <= 0)
+                        return false;
+
+                    var result = item != null ? AddItem(item) : AddCube(cubeType, cubeValue);
+
+                    if (!result)
+                        return false;
+
+                    if (sendImmediateNetworkUpdate)
+                        RequestImmediateNetworkUpdate();
+                    return true;
                 }
-
-                if (RemainingCapacity <= 0)
-                    return false;
-
-                var result = item != null ? AddItem(item) : AddCube(cubeType, cubeValue);
-
-                if (!result)
-                    return false;
-
-                if (sendImmediateNetworkUpdate)
-                    RequestImmediateNetworkUpdate();
-                return true;
-
             }
             catch (Exception e)
             {
@@ -1735,57 +1794,60 @@ namespace Tricky.ExtraStorageHoppers
         /// </summary>
         public bool TryInsert(InventoryInsertionOptions options, ref InventoryInsertionResults results)
         {
-            int remainingCapacity = RemainingCapacity;
-            if (remainingCapacity <= 0)
-                return false;
-
-            if (options.Item != null)
+            lock (mInventory)
             {
-                int currentStackSize = ItemManager.GetCurrentStackSize(options.Item);
-                int amount = currentStackSize;
-                ItemBase lItemToAdd;
-                if (currentStackSize > remainingCapacity)
+                int remainingCapacity = RemainingCapacity;
+                if (remainingCapacity <= 0)
+                    return false;
+
+                if (options.Item != null)
                 {
-                    if (!options.AllowPartialInsertion)
+                    int currentStackSize = ItemManager.GetCurrentStackSize(options.Item);
+                    int amount = currentStackSize;
+                    ItemBase lItemToAdd;
+                    if (currentStackSize > remainingCapacity)
+                    {
+                        if (!options.AllowPartialInsertion)
+                            return false;
+                        amount = remainingCapacity;
+                        lItemToAdd = ItemManager.CloneItem(options.Item, amount);
+                    }
+                    else
+                        lItemToAdd = options.Item;
+
+                    if (!AddItem(lItemToAdd))
                         return false;
-                    amount = remainingCapacity;
-                    lItemToAdd = ItemManager.CloneItem(options.Item, amount);
+                    if (results == null)
+                        results = new InventoryInsertionResults();
+                    results.AmountInserted = amount;
+                    results.AmountRemaining = currentStackSize - amount;
+                    return false;
                 }
-                else
-                    lItemToAdd = options.Item;
 
-                if (!AddItem(lItemToAdd))
+                if (options.Amount == 1)
+                {
+                    if (!AddCube(options.Cube, options.Value))
+                        return false;
+                    if (results == null)
+                        results = new InventoryInsertionResults();
+                    results.AmountInserted = 1;
+                    return true;
+                }
+
+                if (options.Amount > remainingCapacity && !options.AllowPartialInsertion)
                     return false;
+
+                int remainder;
+                for (remainder = options.Amount; remainder > 0; --remainder)
+                    if (!AddCube(options.Cube, options.Value))
+                        break;
+
                 if (results == null)
                     results = new InventoryInsertionResults();
-                results.AmountInserted = amount;
-                results.AmountRemaining = currentStackSize - amount;
-                return false;
-            }
-
-            if (options.Amount == 1)
-            {
-                if (!AddCube(options.Cube, options.Value))
-                    return false;
-                if (results == null)
-                    results = new InventoryInsertionResults();
-                results.AmountInserted = 1;
+                results.AmountInserted = options.Amount - remainder;
+                results.AmountRemaining = remainder;
                 return true;
             }
-
-            if (options.Amount > remainingCapacity && !options.AllowPartialInsertion)
-                return false;
-
-            int remainder;
-            for (remainder = options.Amount; remainder > 0; --remainder)
-                if (!AddCube(options.Cube, options.Value))
-                    break;
-
-            if (results == null)
-                results = new InventoryInsertionResults();
-            results.AmountInserted = options.Amount - remainder;
-            results.AmountRemaining = remainder;
-            return true;
         }
 
 
@@ -1806,9 +1868,7 @@ namespace Tricky.ExtraStorageHoppers
             if (RemainingCapacity <= 0)
                 return false;
 
-            // Adding is committed at this point so all must go in.
-            for (int index = amount; index > 0; --index)
-                AddCube(cube, value);
+            AddItem(new ItemCubeStack(cube, value, amount));
             return true;
         }
 
@@ -1818,33 +1878,49 @@ namespace Tricky.ExtraStorageHoppers
         /// </summary>
         public int TryPartialInsert(StorageUserInterface sourceEntity, ref ItemBase item, bool alwaysCloneItem, bool updateSourceItem)
         {
-            int currentStackSize = ItemManager.GetCurrentStackSize(item);
-            int amount = currentStackSize;
-
-            int remainingCapacity = RemainingCapacity;
-            if (remainingCapacity <= 0)
-                return 0;
-
-            ItemBase itemToAdd;
-            if (currentStackSize > remainingCapacity)
+            lock (mInventory)
             {
-                amount = remainingCapacity;
-                itemToAdd = ItemManager.CloneItem(item, amount);
+                Logging.LogMessage(this, "TryPartialInsert Called for item:" + item.GetDisplayString()+" Clone: "+ alwaysCloneItem+" Update: "+ updateSourceItem,2);
+                int currentStackSize = ItemManager.GetCurrentStackSize(item);
+                int amount = currentStackSize;
+
+                int remainingCapacity = RemainingCapacity;
+                if (remainingCapacity <= 0)
+                    return 0;
+
+                ItemBase itemToAdd;
+                if (currentStackSize > remainingCapacity)
+                {
+                    amount = remainingCapacity;
+                    itemToAdd = ItemManager.CloneItem(item, amount);
+                }
+                else itemToAdd = !alwaysCloneItem ? item : ItemManager.CloneItem(item, currentStackSize);
+
+
+                Logging.LogMessage(this, "TryPartialInsert Calling AddItem on "+itemToAdd.GetDisplayString(),2);
+                if (!AddItem(itemToAdd))
+                {
+                    Logging.LogMessage(this, "TryPartialInsert AddItem Failed",2);
+                    return 0;
+                }
+
+                if (updateSourceItem)
+                {
+                    if (currentStackSize > amount)
+                    {
+                        Logging.LogMessage(this, "TryPartialInsert Changing passed item amount",2);
+                        ItemManager.SetItemCount(item, currentStackSize - amount);
+                    }
+                    else
+                    {
+                        Logging.LogMessage(this, "TryPartialInsert null passed item amount",2);
+                        item = null;
+                    }
+                }
+
+                Logging.LogMessage(this, "TryPartialInsert returned amount: "+amount,2);
+                return amount;
             }
-            else itemToAdd = !alwaysCloneItem ? item : ItemManager.CloneItem(item, currentStackSize);
-
-            if (!AddItem(itemToAdd))
-                return 0;
-
-            if (updateSourceItem)
-            {
-                if (currentStackSize > amount)
-                    ItemManager.SetItemCount(item, currentStackSize - amount);
-                else
-                    item = null;
-            }
-
-            return amount;
         }
 
 
@@ -1853,11 +1929,15 @@ namespace Tricky.ExtraStorageHoppers
         /// </summary>
         public int TryPartialInsert(StorageUserInterface sourceEntity, ushort cube, ushort value, int amount)
         {
-            int remainder;
-            for (remainder = amount; remainder > 0; --remainder)
-                if (!AddCube(cube, value))
-                    break;
-            return amount - remainder;
+            lock (mInventory)
+            {
+                if (amount > RemainingCapacity)
+                    amount = RemainingCapacity;
+                if (amount == 0)
+                    return 0;
+
+                return AddItem(new ItemCubeStack(cube, value, amount)) ? amount : 0;
+            }
         }
 
 
@@ -1996,7 +2076,7 @@ namespace Tricky.ExtraStorageHoppers
 
                 if (OneTypeHopper)
                 {
-                    OneTypeItemName = ItemBaseExtensions.GetStorageIdName(mOneTypeHopperStorageId);
+                    OneTypeItemName = mOneTypeHopperStorageId == 0 ? null : ItemBaseExtensions.GetStorageIdName(mOneTypeHopperStorageId);
                     Logging.LogMessage(this, "One-type storage id: " + mOneTypeHopperStorageId + " - " + (OneTypeItemName ?? "<None>"), 1);
                 }
             }
@@ -2436,9 +2516,9 @@ namespace Tricky.ExtraStorageHoppers
                 if (OneTypeHopper)
                 {
                     if (IsEmpty())
-                        stringBuilder.Append("\n(Shift+X) Set Storage Type : [" + (string.IsNullOrEmpty(OneTypeItemName) ? "<None>" : OneTypeItemName) + "]");
+                        stringBuilder.Append("\n(Shift+X) Set Storage Type : [" + (string.IsNullOrEmpty(OneTypeItemName) ? "None" : OneTypeItemName) + "]");
                     else
-                        stringBuilder.Append("\nStorage Type : [" + (string.IsNullOrEmpty(OneTypeItemName) ? "<None>" : OneTypeItemName) + "]");
+                        stringBuilder.Append("\nStorage Type : [" + (string.IsNullOrEmpty(OneTypeItemName) ? "None" : OneTypeItemName) + "]");
                 }
 
                 int lnAvailable = 0;
@@ -2462,9 +2542,9 @@ namespace Tricky.ExtraStorageHoppers
                     if (amount > availableStorage)
                         amount = availableStorage;
 
-                    int maxStackSize = ItemManager.GetMaxStackSize(itemToStore);
-                    if (amount > maxStackSize)
-                        amount = maxStackSize;
+//                    int maxStackSize = ItemManager.GetMaxStackSize(itemToStore);
+                    //                  if (amount > maxStackSize)
+                    //                    amount = maxStackSize;
                     ItemManager.SetItemCount(itemToStore, amount);
                     stringBuilder.Append(amount == 0
                         ? "\n" + PersistentSettings.GetString("Hopper_full")

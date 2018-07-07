@@ -251,6 +251,7 @@ namespace Tricky.ExtraStorageHoppers
         /// <returns>Actual actually removed.</returns>
         public int RemoveSubStackAmount(int amount)
         {
+            Logging.LogMessage("Removing SubStack Amount on ItemType: "+ ItemType+ " StorageId: "+ StorageId+" Amount: "+ amount,2);
             int remainderToRemove = amount;
             switch (ItemType)
             {

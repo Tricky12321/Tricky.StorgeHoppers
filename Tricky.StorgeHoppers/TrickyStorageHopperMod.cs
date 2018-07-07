@@ -41,7 +41,7 @@ namespace Tricky.ExtraStorageHoppers
         public override ModRegistrationData Register()
         {
             Logging.ModName = "Tricky Storage Hoppers";
-            Logging.LoggingLevel = 0;
+            Logging.LoggingLevel = 2;
 
             try
             {

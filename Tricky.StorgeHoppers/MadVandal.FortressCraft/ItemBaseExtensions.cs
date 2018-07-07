@@ -31,7 +31,7 @@
         /// <summary> 
         /// Gets the name of the item or cube value from a stored id.
         /// </summary>
-        /// <param name="storageId"></param>
+        /// <param name="storageId">Storage id value.</param>
         /// <returns>Name of the item or cube value.</returns>
         public static string GetStorageIdName(uint storageId)
         {
@@ -42,6 +42,28 @@
             ushort cubeType = (ushort) (storageId >> 16);
             ushort cubeValue = (ushort) (storageId & 0xFF);
             return TerrainData.GetNameForValue(cubeType, cubeValue);
+        }
+
+
+        /// <summary>
+        /// Gets the cube type from a storage Id.
+        /// </summary>
+        /// <param name="storageId">Storage id value.</param>
+        /// <returns>Cube type.</returns>
+        public static ushort GetCubeType(uint storageId)
+        {
+            return (ushort)(storageId >> 16);
+        }
+
+
+        /// <summary>
+        /// Gets the cube value from a storage Id.
+        /// </summary>
+        /// <param name="storageId">Storage id value.</param>
+        /// <returns>Cube value.</returns>
+        public static ushort GetCubeValue(uint storageId)
+        {
+            return (ushort)(storageId & 0xFF);
         }
     }
 }

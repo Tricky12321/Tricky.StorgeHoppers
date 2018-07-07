@@ -305,6 +305,7 @@ namespace Tricky.ExtraStorageHoppers
                     UIManager.ForceNGUIUpdate = 0.1f;
                     AudioHUDManager.instance.OrePickup();
                     hopper.SetRetakeDebounce();
+                    mDirty = true;
                     return true;
                 }
             }
@@ -396,60 +397,51 @@ namespace Tricky.ExtraStorageHoppers
             ItemBase itemBase;
             if (item == null)
             {
-                if (!hopper.GetNextRemoveInventorySlot(out int itemId, out ushort cubeType, out ushort cubeValue, out int amount))
+                if (!hopper.GetNextRemoveInventorySlot(out ItemType itemType, out int itemId, out ushort cubeType, out ushort cubeValue, out int amount))
                     return false;
 
+                Logging.LogMessage("GetNextRemoveInventorySlot - ItemType: " + itemType + " ItemId: " + itemId + " Cube: " + cubeType + " Value: " + cubeValue + " Amount: " + amount, 2);
                 if (amount == 0)
                     return false;
 
-                if (itemId > 0)
-                {
-                    itemBase = new ItemStack(itemId, amount);
-                    if (!player.mInventory.AddItem(itemBase))
-                        return false;
+                if (!hopper.TryExtract(eHopperRequestType.eAny, itemId, cubeType, cubeValue, false, 1, amount, false, false, false, true, out itemBase, out ushort _,
+                    out ushort _, out int _) || itemBase==null)
+                    return false;
 
-                    hopper.RemoveInventoryItem(itemId, amount);
-                }
-                else if (cubeType > 0)
+                if (!player.mInventory.AddItem(itemBase))
                 {
-                    itemBase = ItemManager.SpawnCubeStack(cubeType, cubeValue, amount);
-                    if (!player.mInventory.AddItem(itemBase))
-                        return false;
-
-                    hopper.RemoveInventoryCube(cubeType, cubeValue, amount);
+                    hopper.AddItem(itemBase);
+                    return false;
                 }
-                else return false;
             }
             else
             {
                 itemBase = ItemManager.CloneItem(item);
-                switch (itemBase.mType)
+                if (itemBase.mType == ItemType.ItemCubeStack)
                 {
-                    case ItemType.ItemStack:
-                        ItemStack itemStack = (ItemStack)itemBase;
-                        if (!player.mInventory.AddItem(itemStack))
-                            return false;
+                    ItemCubeStack itemCubeStack = (ItemCubeStack) itemBase;
+                    if (!hopper.TryExtractCubes(hopper, itemCubeStack.mCubeType, itemCubeStack.mCubeValue, itemCubeStack.mnAmount))
+                        return false;
 
-                        hopper.RemoveInventoryItem(itemStack.mnItemID, itemStack.mnAmount);
-                        break;
-
-                    case ItemType.ItemCubeStack:
-                        ItemCubeStack itemCubeStack = (ItemCubeStack)itemBase;
-                        if (!player.mInventory.AddItem(itemCubeStack))
-                            return false;
-
-                        hopper.RemoveInventoryCube(itemCubeStack.mCubeType, itemCubeStack.mCubeValue, itemCubeStack.mnAmount);
-                        break;
-
-                    default:
-                        if (!player.mInventory.AddItem(itemBase))
-                            return false;
-
-                        hopper.RemoveInventoryItem(itemBase.mnItemID, 1);
-                        break;
+                    if (!player.mInventory.AddItem(itemBase))
+                    {
+                        hopper.AddItem(itemBase);
+                        return false;
+                    }
 
                 }
+                else
+                {
+                    if (!hopper.TryExtractItems(hopper, itemBase.mnItemID, itemBase.GetAmount()))
+                        return false;
 
+                    if (!player.mInventory.AddItem(itemBase))
+                    {
+                        hopper.AddItem(itemBase);
+                        return false;
+                    }
+
+                }
             }
 
             if (player.mbIsLocalPlayer)
