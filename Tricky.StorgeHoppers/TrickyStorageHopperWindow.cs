@@ -230,7 +230,6 @@ namespace Tricky.ExtraStorageHoppers
 
         public override bool ButtonClicked(string name, SegmentEntity targetEntity)
         {
-            Debug.Log("Button Clicked: "+ name);
             if (!(targetEntity is TrickyStorageHopper hopper))
                 return false;
 
@@ -268,7 +267,6 @@ namespace Tricky.ExtraStorageHoppers
 
             if (name == BUTTON_TOGGLE_VACUUM)
             {
-                Debug.Log("Toggle vacuum");
                 UIManager.ForceNGUIUpdate = 0.1f;
                 AudioHUDManager.instance.HUDIn();
                 hopper.SetVacuum(!hopper.VacuumOn, true);
@@ -287,7 +285,6 @@ namespace Tricky.ExtraStorageHoppers
 
             if (name == BUTTON_TOGGLE_HIVEMIND_FEEDING)
             {
-                Debug.Log("Toggle hivemind feeding");
                 UIManager.ForceNGUIUpdate = 0.1f;
                 AudioHUDManager.instance.HUDIn();
                 hopper.SetHivemindFeeding(!hopper.HivemindFeedingOn, true);
@@ -301,6 +298,16 @@ namespace Tricky.ExtraStorageHoppers
                 if (result > -1 && result < mDisplayedItemBaseList.Count)
                 {
                     ItemBase itemBase = mDisplayedItemBaseList[result];
+                    
+                    if (itemBase.mType == ItemType.ItemCubeStack || itemBase.mType == ItemType.ItemStack)
+                    {
+                        itemBase = ItemManager.CloneItem(itemBase);
+                        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+                            itemBase.SetAmount(10);
+                        if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+                            itemBase.SetAmount(1);
+                    }
+
                     TakeItems(WorldScript.mLocalPlayer, hopper, itemBase);
                     UIManager.ForceNGUIUpdate = 0.1f;
                     AudioHUDManager.instance.OrePickup();
