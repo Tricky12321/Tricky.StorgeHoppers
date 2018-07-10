@@ -40,6 +40,10 @@ namespace Tricky.ExtraStorageHoppers
         /// </summary>
         public const ushort SPOILED_ORGANICS_ITEM_ID = 4100;
 
+        /// <summary>
+        /// Take key debounce time.
+        /// </summary>
+        public const float RETAKE_DEBOUNCE_TIME = 0.4f;
 
         /// <summary>
         /// Previous hopper permissions.
@@ -2466,7 +2470,7 @@ namespace Tricky.ExtraStorageHoppers
         /// </summary>
         public void SetRetakeDebounce()
         {
-            mRetakeDebounce = 0.5f;
+            mRetakeDebounce = RETAKE_DEBOUNCE_TIME;
         }
 
 
@@ -2597,7 +2601,7 @@ namespace Tricky.ExtraStorageHoppers
                                 NetworkManager.instance.mClientThread.mPreviousTargetEntity = null;
                             UIManager.ForceNGUIUpdate = 0.1f;
                             AudioHUDManager.instance.OrePickup();
-                            mRetakeDebounce = 0.5f;
+                            mRetakeDebounce = RETAKE_DEBOUNCE_TIME;
                         }
                         else
                         {
