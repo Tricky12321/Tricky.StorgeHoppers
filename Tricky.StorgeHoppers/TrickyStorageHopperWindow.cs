@@ -620,9 +620,15 @@ namespace Tricky.ExtraStorageHoppers
             };
         }
 
-        public static void SetDirty()
+
+
+        public static void SetDirty(bool redraw)
         {
+            if (redraw)
+                mNetworkRedraw = true;
             mDirty = true;
         }
+
+        
     }
 }

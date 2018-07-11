@@ -96,6 +96,11 @@ namespace Tricky.ExtraStorageHoppers
         private int mHopperReBalanceCycle;
 
         /// <summary>
+        /// Current active slot count.
+        /// </summary>
+        private int mActiveSlotCount;
+
+        /// <summary>
         /// Last item added.
         /// </summary>
         private ItemBase mLastItemAdded;
@@ -318,7 +323,7 @@ namespace Tricky.ExtraStorageHoppers
             mCubeColor = hopperColor;
             OneTypeHopper = oneTypeHopper;
 
-            CountFreeSlots();
+            CountSlots();
         }
 
 
@@ -332,14 +337,21 @@ namespace Tricky.ExtraStorageHoppers
 
             lock (mInventory)
             {
-                Random random = new Random();
-                foreach (ItemBase item in GetInventory())
+                try
                 {
-                    Vector3 velocity = new Vector3((float) random.NextDouble() - 0.5f, (float) random.NextDouble() - 0.5f, (float) random.NextDouble() - 0.5f);
-                    ItemManager.instance.DropItem(item, mnX, mnY, mnZ, velocity);
-                }
+                    Random random = new Random();
+                    foreach (ItemBase item in GetInventory())
+                    {
+                        Vector3 velocity = new Vector3((float) random.NextDouble() - 0.5f, (float) random.NextDouble() - 0.5f, (float) random.NextDouble() - 0.5f);
+                        ItemManager.instance.DropItem(item, mnX, mnY, mnZ, velocity);
+                    }
 
-                mInventory.Clear();
+                    mInventory.Clear();
+                }
+                catch (Exception e)
+                {
+                    Logging.LogException(e);
+                }
             }
 
             base.OnDelete();
@@ -499,7 +511,7 @@ namespace Tricky.ExtraStorageHoppers
 
             lock (mInventory)
             {
-                for (uint storageId = 4000; storageId <= 4010; storageId += 2)
+                for (uint storageId = 4001; storageId <= 4009; storageId += 2)
                 {
                     if (!mInventory.TryGetValue(storageId, out InventoryStack inventoryStack))
                         continue;
@@ -761,22 +773,37 @@ namespace Tricky.ExtraStorageHoppers
         /// <summary>
         /// Updates the counts of free slots.
         /// </summary>
-        private void CountFreeSlots()
+        private void CountSlots()
         {
             try
             {
                 lock (mInventory)
                 {
                     int originalStorageUsed = UsedCapacity;
+                    int originalSlotCount = mActiveSlotCount;
                     int newUsedCapacity = 0;
-                    foreach (InventoryStack inventoryStack in mInventory.Values)
-                        newUsedCapacity += inventoryStack.Count;
+                    int newSlotCount = 0;
 
-                    if (newUsedCapacity != originalStorageUsed)
+                    foreach (InventoryStack inventoryStack in mInventory.Values)
+                    {
+                        int count = inventoryStack.Count;
+                        newUsedCapacity += count;
+                        if (count > 0)
+                            newSlotCount++;
+                    }
+
+                    if (newSlotCount != originalSlotCount)
+                    {
+                        mActiveSlotCount = newSlotCount;
+                        UsedCapacity = newUsedCapacity;
+                        mForceTextUpdate = true;
+                        TrickyStorageHopperWindow.SetDirty(true);
+                    }
+                    else if (newUsedCapacity != originalStorageUsed)
                     {
                         UsedCapacity = newUsedCapacity;
                         mForceTextUpdate = true;
-                        TrickyStorageHopperWindow.SetDirty();
+                        TrickyStorageHopperWindow.SetDirty(false);
                     }
                 }
             }
@@ -833,7 +860,7 @@ namespace Tricky.ExtraStorageHoppers
                     }
 
                     // Ensure free slot count is up to date.
-                    CountFreeSlots();
+                    CountSlots();
 
                     // If there is insufficient space then return false.
                     int remainingCapacity = mMaximumCapacity - UsedCapacity;
@@ -886,7 +913,7 @@ namespace Tricky.ExtraStorageHoppers
                         ? "Unknown Material"
                         : ItemManager.GetItemName(itemToAdd);
 
-                    CountFreeSlots();
+                    CountSlots();
                     Logging.LogMessage(this, "Recount used capacity:" + UsedCapacity, 2);
                 }
             }
@@ -951,7 +978,7 @@ namespace Tricky.ExtraStorageHoppers
                         ? "Unknown Material"
                         : TerrainData.GetNameForValue(cubeType, cubeValue);
 
-                    CountFreeSlots();
+                    CountSlots();
                 }
 
             }
@@ -1020,7 +1047,7 @@ namespace Tricky.ExtraStorageHoppers
                     amount = itemCubeStack.mnAmount;
                 itemCubeStack.mnAmount -= amount;
 
-                CountFreeSlots();
+                CountSlots();
 
                 if (UsedCapacity == 0)
                 {
@@ -1072,7 +1099,7 @@ namespace Tricky.ExtraStorageHoppers
                         return 0;
                 }
 
-                CountFreeSlots();
+                CountSlots();
                 if (UsedCapacity == 0)
                 {
                     mLastItemAdded = null;
@@ -1225,20 +1252,8 @@ namespace Tricky.ExtraStorageHoppers
             lock (mInventory)
             {
                 foreach (InventoryStack inventoryStack in mInventory.Values)
-                {
-                    switch (inventoryStack.ItemType)
-                    {
-                        case ItemType.ItemCubeStack:
-                        case ItemType.ItemStack:
-                            if (!itemFunc(inventoryStack.Item, state))
-                                return;
-                            break;
-                        default:
-                            if (!inventoryStack.IterateContents(itemFunc, state))
-                                return;
-                            break;
-                    }
-                }
+                    if (!inventoryStack.IterateContents(itemFunc, state))
+                        return;
             }
         }
 
@@ -1301,7 +1316,7 @@ namespace Tricky.ExtraStorageHoppers
                         break;
                 }
 
-                CountFreeSlots();
+                CountSlots();
             }
 
             MarkDirtyDelayed();
@@ -1639,6 +1654,7 @@ namespace Tricky.ExtraStorageHoppers
                         break;
 
                     case ItemType.ItemStack:
+                    {
                         Logging.LogMessage(this, "TryExtract - Return ItemStack", 2);
                         ItemStack itemStack = (ItemStack) inventoryStack.Item;
                         int extractedStackAmount = Math.Min(itemStack.mnAmount, maximumAmount);
@@ -1648,6 +1664,18 @@ namespace Tricky.ExtraStorageHoppers
                         itemStack.mnAmount -= extractedStackAmount;
                         returnedItem = new ItemStack(itemStack.mnItemID, extractedStackAmount);
                         break;
+                    }
+                    case ItemType.ItemSingle:
+                    {
+                        Logging.LogMessage(this, "TryExtract - Return Single of ItemStack", 2);
+                        ItemStack itemStack = (ItemStack) inventoryStack.Item;
+                        returnedCubeType = 0;
+                        returnedCubeValue = 0;
+                        returnedAmount = 1;
+                        itemStack.mnAmount -= 1;
+                        returnedItem = new ItemSingle(itemStack.mnItemID);
+                        break;
+                    }
 
                     default:
                         Logging.LogMessage(this, "TryExtract - Return sub-stack item", 2);
@@ -1670,7 +1698,7 @@ namespace Tricky.ExtraStorageHoppers
                     }*/
             }
 
-            CountFreeSlots();
+            CountSlots();
             Logging.LogMessage(this, "Recount used capacity:" + UsedCapacity, 2);
             MarkDirtyDelayed();
             RequestImmediateNetworkUpdate();
@@ -2073,7 +2101,7 @@ namespace Tricky.ExtraStorageHoppers
                 Logging.LogMessage(this, "Inventory Length: " + (endPosition - startPosition), 1);
 
                 // Count free slots.
-                CountFreeSlots();
+                CountSlots();
 
                 mForceHoloUpdate = true;
                 mForceTextUpdate = true;
@@ -2172,7 +2200,7 @@ namespace Tricky.ExtraStorageHoppers
                         Logging.LogMessage(this, "Inventory Length: " + (endPosition - startPosition), 1);
 
                         // Count free slots.
-                        CountFreeSlots();
+                        CountSlots();
                     }
                     else
                     {
@@ -2287,12 +2315,19 @@ namespace Tricky.ExtraStorageHoppers
         /// </summary>
         public override void WriteNetworkUpdate(BinaryWriter writer)
         {
-            writer.Write((byte) Permissions);
-            writer.Write(VacuumOn);
-            writer.Write(ContentSharingOn);
-            writer.Write(HivemindFeedingOn);
-            writer.Write(VoidHopperDeleteCount);
-            WriteInventory(writer);
+            try
+            {
+                writer.Write((byte) Permissions);
+                writer.Write(VacuumOn);
+                writer.Write(ContentSharingOn);
+                writer.Write(HivemindFeedingOn);
+                writer.Write(VoidHopperDeleteCount);
+                WriteInventory(writer);
+            }
+            catch (Exception e)
+            {
+                Logging.LogException(e);
+            }
         }
 
 
@@ -2301,25 +2336,32 @@ namespace Tricky.ExtraStorageHoppers
         /// </summary>
         public override void ReadNetworkUpdate(BinaryReader reader)
         {
-            eHopperPermissions permissions = Permissions;
-            Permissions = (eHopperPermissions) reader.ReadByte();
-            if (!mSegment.mbValidateOnly && NetworkManager.mbClientRunning && FloatingCombatTextManager.instance != null && mLinkedToGameObject &&
-                Permissions != permissions && mDistanceToPlayer < 32.0)
+            try
             {
-                FloatingCombatTextQueue floatingCombatTextQueue = FloatingCombatTextManager.instance.QueueText(mnX, mnY + 1L, mnZ, 1f,
-                    StorageHopper.GetHopperPermissionsString(Permissions), Color.cyan, 1.5f);
-                if (floatingCombatTextQueue != null)
-                    floatingCombatTextQueue.mrStartRadiusRand = 0.25f;
+                eHopperPermissions permissions = Permissions;
+                Permissions = (eHopperPermissions) reader.ReadByte();
+                if (!mSegment.mbValidateOnly && NetworkManager.mbClientRunning && FloatingCombatTextManager.instance != null && mLinkedToGameObject &&
+                    Permissions != permissions && mDistanceToPlayer < 32.0)
+                {
+                    FloatingCombatTextQueue floatingCombatTextQueue = FloatingCombatTextManager.instance.QueueText(mnX, mnY + 1L, mnZ, 1f,
+                        StorageHopper.GetHopperPermissionsString(Permissions), Color.cyan, 1.5f);
+                    if (floatingCombatTextQueue != null)
+                        floatingCombatTextQueue.mrStartRadiusRand = 0.25f;
+                }
+
+                VacuumOn = reader.ReadBoolean();
+                ContentSharingOn = reader.ReadBoolean();
+                HivemindFeedingOn = reader.ReadBoolean();
+                VoidHopperDeleteCount = reader.ReadInt32();
+
+                ReadInventory(reader);
+                mForceHoloUpdate = true;
+                mForceTextUpdate = true;
             }
-
-            VacuumOn = reader.ReadBoolean();
-            ContentSharingOn = reader.ReadBoolean();
-            HivemindFeedingOn = reader.ReadBoolean();
-            VoidHopperDeleteCount = reader.ReadInt32();
-
-            ReadInventory(reader);
-            mForceHoloUpdate = true;
-            mForceTextUpdate = true;
+            catch (Exception e)
+            {
+                Logging.LogException(e);
+            }
         }
 
 
@@ -2611,6 +2653,9 @@ namespace Tricky.ExtraStorageHoppers
                                 PersistentSettings.GetString("Failed_Inventory_Full"), Color.red, 1.5f);
                         }
                     }
+
+                    if (Input.GetButtonUp("Extract"))
+                        mRetakeDebounce = 0;
 
                     if (Input.GetButtonDown("Interact") && Input.GetKey(KeyCode.LeftShift))
                     {
@@ -3078,16 +3123,11 @@ namespace Tricky.ExtraStorageHoppers
                 {
                     if (inventoryStack.Count == 0)
                         continue;
-                    if (inventoryStack.IsStackItem)
-                        itemBase.Add(inventoryStack.Item);
-                    else
+                    inventoryStack.IterateContents((item, state) =>
                     {
-                        inventoryStack.IterateContents((item, state) =>
-                        {
-                            itemBase.Add(item);
-                            return true;
-                        }, null);
-                    }
+                        itemBase.Add(item);
+                        return true;
+                    }, null);
                 }
             }
 

@@ -58,34 +58,43 @@ namespace Tricky.ExtraStorageHoppers
         {
             get
             {
-                int amount;
-                switch (ItemType)
+                try
                 {
-                    case ItemType.ItemCubeStack:
+                    int amount;
+                    switch (ItemType)
                     {
-                        if (Item == null)
+                        case ItemType.ItemCubeStack:
                         {
-                            Logging.LogError("NULL item on inventory CubeStack");
-                            return 0;
-                        }
+                            if (Item == null)
+                            {
+                                Logging.LogError("NULL item on inventory CubeStack - Correcting");
+                                Item = new ItemCubeStack(ItemBaseExtensions.GetCubeType(StorageId), ItemBaseExtensions.GetCubeValue(StorageId), 0);
+                            }
 
-                        amount = ((ItemCubeStack) Item).mnAmount;
-                        Logging.LogMessage("Count on " + StorageId + " = " + amount, 2);
-                        return amount;
+                            amount = ((ItemCubeStack) Item).mnAmount;
+                            Logging.LogMessage("Count on " + StorageId + " = " + amount, 2);
+                            return amount;
+                        }
+                        case ItemType.ItemStack:
+                        case ItemType.ItemSingle:
+                            if (Item == null)
+                            {
+                                Logging.LogError("NULL item on inventory ItemStack - Correcting");
+                                Item = new ItemStack((int) StorageId, 0);
+                            }
+
+                            amount = ((ItemStack) Item).mnAmount;
+                            Logging.LogMessage("Count on " + StorageId + " = " + amount, 2);
+                            return amount;
+                        default:
+                            Logging.LogMessage("Count on " + StorageId + " = " + mSubStackCount, 2);
+                            return mSubStackCount;
                     }
-                    case ItemType.ItemStack:
-                        if (Item == null)
-                        {
-                            Logging.LogError("NULL item on inventory ItemStack");
-                            return 0;
-                        }
-
-                        amount = ((ItemStack) Item).mnAmount;
-                        Logging.LogMessage("Count on "+StorageId+" = "+ amount, 2);
-                        return amount;
-                    default:
-                        Logging.LogMessage("Count on " + StorageId + " = " + mSubStackCount,2);
-                        return mSubStackCount;
+                }
+                catch (Exception e)
+                {
+                    Logging.LogException(e);
+                    return 0;
                 }
             }
         }
@@ -117,7 +126,7 @@ namespace Tricky.ExtraStorageHoppers
         /// <summary>
         /// Maximum durability of the ItemDurability type stored. Used to re-spawn ItemCharge objects.
         /// </summary>
-        private int mMaximumDurability;
+        private readonly int mMaximumDurability;
 
 
         /// <summary>
@@ -132,7 +141,7 @@ namespace Tricky.ExtraStorageHoppers
 
             if (itemType == ItemType.ItemCubeStack)
                 Item = new ItemCubeStack(CubeType, CubeValue, 0);
-            else if (itemType == ItemType.ItemStack || itemType== ItemType.ItemSingle)
+            else if (itemType == ItemType.ItemStack || itemType == ItemType.ItemSingle)
                 Item = new ItemStack((int) storageId, 0);
             else if (itemType == ItemType.ItemDurability)
             {
@@ -251,7 +260,7 @@ namespace Tricky.ExtraStorageHoppers
         /// <returns>Actual actually removed.</returns>
         public int RemoveSubStackAmount(int amount)
         {
-            Logging.LogMessage("Removing SubStack Amount on ItemType: "+ ItemType+ " StorageId: "+ StorageId+" Amount: "+ amount,2);
+            Logging.LogMessage("Removing SubStack Amount on ItemType: " + ItemType + " StorageId: " + StorageId + " Amount: " + amount, 2);
             int remainderToRemove = amount;
             switch (ItemType)
             {
@@ -357,8 +366,8 @@ namespace Tricky.ExtraStorageHoppers
 
                 case ItemType.ItemSingle:
                     ItemStack itemStack = (ItemStack) Item;
-                    for(int count=0; count < itemStack.mnAmount; count++) 
-                        if (!itemFunc(new ItemSingle((int)StorageId), state))
+                    for (int count = 0; count < itemStack.mnAmount; count++)
+                        if (!itemFunc(new ItemSingle((int) StorageId), state))
                             return false;
                     return true;
 
@@ -385,7 +394,7 @@ namespace Tricky.ExtraStorageHoppers
                     ((ItemStack) Item).mnAmount = 0;
                     break;
                 case ItemType.ItemCubeStack:
-                    ((ItemCubeStack)Item).mnAmount = 0;
+                    ((ItemCubeStack) Item).mnAmount = 0;
                     break;
             }
         }
@@ -402,48 +411,66 @@ namespace Tricky.ExtraStorageHoppers
             uint storageId = reader.ReadUInt32();
             InventoryStack inventoryStack = new InventoryStack(itemType, storageId);
 
-            Logging.LogMessage("Storage Id:" + storageId + " Item Type:" + itemType + " IsStackItem:" + inventoryStack.IsStackItem + " Cube:" + inventoryStack.CubeType +
+            Logging.LogMessage("Read - Storage Id:" + storageId + " Item Type:" + itemType + " IsStackItem:" + inventoryStack.IsStackItem + " Cube:" + inventoryStack.CubeType +
                                " Value:" + inventoryStack.CubeValue, 1);
 
-            if (inventoryStack.IsStackItem)
-                inventoryStack.Item = ItemFile.DeserialiseItem(reader);
-            else
+            switch (itemType)
             {
-                int itemCount = reader.ReadUInt16();
-                Logging.LogMessage("Sub-stack count: "+itemCount, 1);
-                switch (itemType)
+                case ItemType.ItemCubeStack:
+                case ItemType.ItemStack:
+                    inventoryStack.Item = ItemFile.DeserialiseItem(reader);
+                    if (Logging.LoggingLevel >= 2)
+                        Logging.LogMessage("Deserialize item " + inventoryStack.Item.GetDisplayString(), 2);
+                    break;
+
+                case ItemType.ItemSingle:
+                    ushort count = reader.ReadUInt16();
+                    Logging.LogMessage("Read ItemSingle count: " + count, 2);
+                    inventoryStack.Item = new ItemStack((int) storageId, count);
+                    break;
+
+                case ItemType.ItemCharge:
                 {
-                    case ItemType.ItemCharge:
-                        for (int itemIndex = 0; itemIndex < itemCount; itemIndex++)
-                        {
-                            int chargeValue = reader.ReadInt32();
-                            ushort amount = reader.ReadUInt16();
-                            inventoryStack.mChargeSubStack[chargeValue] = amount;
-                            inventoryStack.mSubStackCount += amount;
-                        }
+                    int itemCount = reader.ReadUInt16();
+                    Logging.LogMessage("Sub-stack count: " + itemCount, 1);
+                    for (int itemIndex = 0; itemIndex < itemCount; itemIndex++)
+                    {
+                        int chargeValue = reader.ReadInt32();
+                        ushort amount = reader.ReadUInt16();
+                        inventoryStack.mChargeSubStack[chargeValue] = amount;
+                        inventoryStack.mSubStackCount += amount;
+                    }
 
-                        break;
+                    break;
+                }
 
-                    case ItemType.ItemDurability:
-                        for (int itemIndex = 0; itemIndex < itemCount; itemIndex++)
-                        {
-                            ushort durabilityValue = reader.ReadUInt16();
-                            ushort amount = reader.ReadUInt16();
-                            Logging.LogMessage("Durability Value: " + durabilityValue+" Amount: "+ amount, 1);
-                            inventoryStack.mDurabilitySubStack[durabilityValue] = amount;
-                            inventoryStack.mSubStackCount += amount;
-                        }
+                case ItemType.ItemDurability:
+                {
+                    int itemCount = reader.ReadUInt16();
+                    Logging.LogMessage("Sub-stack count: " + itemCount, 1);
+                    for (int itemIndex = 0; itemIndex < itemCount; itemIndex++)
+                    {
+                        ushort durabilityValue = reader.ReadUInt16();
+                        ushort amount = reader.ReadUInt16();
+                        Logging.LogMessage("Durability Value: " + durabilityValue + " Amount: " + amount, 1);
+                        inventoryStack.mDurabilitySubStack[durabilityValue] = amount;
+                        inventoryStack.mSubStackCount += amount;
+                    }
 
-                        break;
+                    break;
+                }
 
-                    case ItemType.ItemLocation:
-                        for (int itemIndex = 0; itemIndex < itemCount; itemIndex++)
-                        {
-                            inventoryStack.mLocationSubStack.Add((ItemLocation) ItemFile.DeserialiseItem(reader));
-                            inventoryStack.mSubStackCount++;
-                        }
-                        break;
+                case ItemType.ItemLocation:
+                {
+                    int itemCount = reader.ReadUInt16();
+                    Logging.LogMessage("Sub-stack count: " + itemCount, 1);
+                    for (int itemIndex = 0; itemIndex < itemCount; itemIndex++)
+                    {
+                        inventoryStack.mLocationSubStack.Add((ItemLocation) ItemFile.DeserialiseItem(reader));
+                        inventoryStack.mSubStackCount++;
+                    }
 
+                    break;
                 }
             }
 
@@ -460,43 +487,56 @@ namespace Tricky.ExtraStorageHoppers
             writer.Write((byte) ItemType);
             writer.Write(StorageId);
 
-            Logging.LogMessage("Storage Id:" + StorageId + " Item Type:" + ItemType + " IsStackItem:" + IsStackItem + " Cube:" + CubeType +
+            Logging.LogMessage("Write - Storage Id:" + StorageId + " Item Type:" + ItemType + " IsStackItem:" + IsStackItem + " Cube:" + CubeType +
                                " Value:" + CubeValue, 1);
-            if (IsStackItem)
-                ItemFile.SerialiseItem(Item, writer);
-            else
+            switch (ItemType)
             {
-                switch (ItemType)
-                {
-                    case ItemType.ItemCharge:
-                        writer.Write((ushort) mChargeSubStack.Count);
-                        foreach (int chargeValue in mChargeSubStack.Keys)
-                        {
-                            writer.Write(chargeValue);
-                            writer.Write(mChargeSubStack[chargeValue]);
-                        }
+                case ItemType.ItemCubeStack:
+                case ItemType.ItemStack:
+                    if (Logging.LoggingLevel >= 2)
+                        Logging.LogMessage("Write Serialized Item: " + Item.GetDisplayString(), 2);
+                    ItemFile.SerialiseItem(Item, writer);
+                    break;
 
-                        break;
+                case ItemType.ItemSingle:
+                    ushort count = (ushort) ((ItemStack) Item).mnAmount;
+                    if (Logging.LoggingLevel >= 2)
+                        Logging.LogMessage("Write ItemSingle count: " + count, 2);
+                    writer.Write(count);
+                    break;
 
-                    case ItemType.ItemDurability:
-                        writer.Write((ushort) mDurabilitySubStack.Count);
-                        foreach (ushort durabilityValue in mDurabilitySubStack.Keys)
-                        {
-                            writer.Write(durabilityValue);
-                            writer.Write(mDurabilitySubStack[durabilityValue]);
-                        }
+                case ItemType.ItemCharge:
+                    Logging.LogMessage("Write Item Charge - Count: " + mChargeSubStack.Count, 2);
+                    writer.Write((ushort) mChargeSubStack.Count);
+                    foreach (int chargeValue in mChargeSubStack.Keys)
+                    {
+                        writer.Write(chargeValue);
+                        writer.Write(mChargeSubStack[chargeValue]);
+                    }
 
-                        break;
+                    break;
 
-                    case ItemType.ItemLocation:
-                        writer.Write((ushort) mLocationSubStack.Count);
-                        foreach (ItemLocation itemLocation in mLocationSubStack)
-                            ItemFile.SerialiseItem(itemLocation, writer);
+                case ItemType.ItemDurability:
+                    Logging.LogMessage("Write Item Durability - Count: " + mDurabilitySubStack.Count, 2);
+                    writer.Write((ushort) mDurabilitySubStack.Count);
+                    foreach (ushort durabilityValue in mDurabilitySubStack.Keys)
+                    {
+                        writer.Write(durabilityValue);
+                        writer.Write(mDurabilitySubStack[durabilityValue]);
+                    }
 
-                        break;
+                    break;
 
-                }
+                case ItemType.ItemLocation:
+                    writer.Write((ushort) mLocationSubStack.Count);
+                    Logging.LogMessage("Write Item Location - Count: " + mLocationSubStack.Count, 2);
+                    foreach (ItemLocation itemLocation in mLocationSubStack)
+                        ItemFile.SerialiseItem(itemLocation, writer);
+
+                    break;
+
             }
         }
     }
+
 }
