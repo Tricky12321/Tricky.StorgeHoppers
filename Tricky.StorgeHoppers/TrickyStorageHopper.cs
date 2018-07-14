@@ -792,18 +792,12 @@ namespace Tricky.ExtraStorageHoppers
                             newSlotCount++;
                     }
 
-                    if (newSlotCount != originalSlotCount)
+                    if (newSlotCount != originalSlotCount || newUsedCapacity != originalStorageUsed)
                     {
+                        TrickyStorageHopperWindow.SetDirty();
                         mActiveSlotCount = newSlotCount;
                         UsedCapacity = newUsedCapacity;
                         mForceTextUpdate = true;
-                        TrickyStorageHopperWindow.SetDirty(true);
-                    }
-                    else if (newUsedCapacity != originalStorageUsed)
-                    {
-                        UsedCapacity = newUsedCapacity;
-                        mForceTextUpdate = true;
-                        TrickyStorageHopperWindow.SetDirty(false);
                     }
                 }
             }

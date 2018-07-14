@@ -48,13 +48,13 @@ namespace Tricky.ExtraStorageHoppers
         private static bool mDirty;
         private static bool mNetworkRedraw;
 
-        private int mSlotCount;
-        private List<ItemBase> mDisplayedItemBaseList = new List<ItemBase>();
+        private static int mSlotCount;
+        private static List<ItemBase> mDisplayedItemBaseList = new List<ItemBase>();
 
         /// <summary>
         /// Current machine panel state.
         /// </summary>
-        protected MachinePanelState mMachinePanelState = MachinePanelState.Closed;
+        protected static MachinePanelState mMachinePanelState = MachinePanelState.Closed;
 
 
         public override void SpawnWindow(SegmentEntity targetEntity)
@@ -212,17 +212,33 @@ namespace Tricky.ExtraStorageHoppers
             
             // Leave first slot as the empty to drop new stuff.
             int slotIndex = 0;
-            List<ItemBase> itemBaseList = hopper.GetInventory();
-            for(int index=0; index < mSlotCount; index++)
-            {
-                ItemBase itemBase = index < itemBaseList.Count ? itemBaseList[index] : null;
-                int currentStackSize = itemBase != null ? ItemManager.GetCurrentStackSize(itemBase) : 0;
+            int columnSize = 60;
+            int yPosition = 310;
+            mDisplayedItemBaseList = hopper.GetInventory();
+            int newSlotCount = hopper.mValue == 0 ? 0 : mDisplayedItemBaseList.Count;
 
+            for (int index=0; index < mSlotCount; index++)
+            {
+                ItemBase itemBase = index < mDisplayedItemBaseList.Count ? mDisplayedItemBaseList[index] : null;
+                int currentStackSize = itemBase != null ? ItemManager.GetCurrentStackSize(itemBase) : 0;
                 string itemIcon = ItemManager.GetItemIcon(itemBase);
+
+                if (slotIndex >= mSlotCount)
+                {
+                    int row = slotIndex / 5;
+                    int column = slotIndex % 5;
+                    manager.AddIcon(ITEM_SLOT + slotIndex, "empty", Color.white, column * columnSize + 10, row * 60 + yPosition);
+                    manager.AddLabel(GenericMachineManager.LabelType.OneLineHalfWidth, LABEL_STACK_SIZE + slotIndex, string.Empty, Color.white, false, column * columnSize + 33,
+                        row * 60 + yPosition + 22);
+                }
+
                 manager.UpdateIcon(ITEM_SLOT + slotIndex, itemIcon, Color.white);
                 manager.UpdateLabel(LABEL_STACK_SIZE + slotIndex, currentStackSize.ToString("###").PadLeft(3), Color.white);
                 slotIndex++;
             }
+
+            mSlotCount = newSlotCount;
+
 
             mDirty = false;
         }
@@ -622,10 +638,8 @@ namespace Tricky.ExtraStorageHoppers
 
 
 
-        public static void SetDirty(bool redraw)
+        public static void SetDirty()
         {
-            if (redraw)
-                mNetworkRedraw = true;
             mDirty = true;
         }
 
