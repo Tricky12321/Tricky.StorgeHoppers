@@ -3134,72 +3134,80 @@ namespace Tricky.ExtraStorageHoppers
         /// </summary>
         private void PerformHiveSearch()
         {
-            // If closest is dead then dereference it.
-            if (mClosestHiveEntity != null && (mClosestHiveEntity.mbMurdered || mClosestHiveEntity.mbDelete || mClosedHiveEntityRecheckTimer < 0))
-                mClosestHiveEntity = null;
-
-            // If closest check timer expired then dereference it and reset timer.
-            if (mClosestHiveEntity != null)
+            try
             {
-                mClosedHiveEntityRecheckTimer -= LowFrequencyThread.mrPreviousUpdateTimeStep;
-                if (mClosedHiveEntityRecheckTimer <= 0)
-                {
-                    Logging.LogMessage("Closest hive entity cleared for re-search", 2);
+                // If closest is dead then dereference it.
+                if (mClosestHiveEntity != null && (mClosestHiveEntity.mbMurdered || mClosestHiveEntity.mbDelete || mClosedHiveEntityRecheckTimer < 0))
                     mClosestHiveEntity = null;
-                    mClosedHiveEntityRecheckTimer = 60;
-                }
-            }
 
-            // If closest hive is set then leave.
-            if (mClosestHiveEntity != null)
-            {
-                mHivemindAvailable = true;
-                return;
-            }
-
-            // Closest to CPH is found then use it.
-            if (CentralPowerHub.mClosestHive != null)
-            {
-                mClosestHiveEntity = CentralPowerHub.mClosestHive;
-                mHivemindAvailable = true;
-                Logging.LogMessage("Closest hive mind entity set from CPH", 2);
-                return;
-            }
-
-            Logging.LogMessage("Closest hive mind entity search", 2);
-            int entityTypeIndex = (int) eSegmentEntity.HiveEntity;
-            float currentClosestDistance = 9999f;
-            foreach (Segment updateSegment in WorldScript.instance.mSegmentUpdater.updateList)
-            {
-                if (updateSegment == null || !updateSegment.mbInitialGenerationComplete || updateSegment.mEntities?[entityTypeIndex] == null)
-                    continue;
-
-                int count = updateSegment.mEntities[entityTypeIndex].Count;
-                if (count <= 0)
-                    continue;
-
-                for (int entityIndex = 0; entityIndex < count; ++entityIndex)
+                // If closest check timer expired then dereference it and reset timer.
+                if (mClosestHiveEntity != null)
                 {
-                    if (!(updateSegment.mEntities[entityTypeIndex][entityIndex] is HiveEntity hiveEntity))
-                        continue;
-
-                    float sqrMagnitude = new Vector3(CentralPowerHub.mnCPH_X - hiveEntity.mnX, CentralPowerHub.mnCPH_Y - hiveEntity.mnY,
-                        CentralPowerHub.mnCPH_Z - hiveEntity.mnZ).sqrMagnitude;
-                    if (sqrMagnitude < currentClosestDistance)
+                    mClosedHiveEntityRecheckTimer -= LowFrequencyThread.mrPreviousUpdateTimeStep;
+                    if (mClosedHiveEntityRecheckTimer <= 0)
                     {
-                        mClosestHiveEntity = hiveEntity;
-                        currentClosestDistance = sqrMagnitude;
+                        Logging.LogMessage("Closest hive entity cleared for re-search", 2);
+                        mClosestHiveEntity = null;
+                        mClosedHiveEntityRecheckTimer = 60;
                     }
                 }
-            }
 
-            mHivemindAvailable = mClosestHiveEntity != null;
-            if (mHivemindAvailable)
+                // If closest hive is set then leave.
+                if (mClosestHiveEntity != null)
+                {
+                    mHivemindAvailable = true;
+                    return;
+                }
+
+                // Closest to CPH is found then use it.
+                if (CentralPowerHub.mClosestHive != null)
+                {
+                    mClosestHiveEntity = CentralPowerHub.mClosestHive;
+                    mHivemindAvailable = true;
+                    Logging.LogMessage("Closest hive mind entity set from CPH", 2);
+                    return;
+                }
+
+                Logging.LogMessage("Closest hive mind entity search", 2);
+                int entityTypeIndex = (int) eSegmentEntity.HiveEntity;
+                float currentClosestDistance = 9999f;
+                int segmentCount = WorldScript.instance.mSegmentUpdater.updateList.Count;
+                for (int segmentIndex =0; segmentIndex < segmentCount; segmentIndex++)
+                {
+                    Segment updateSegment = WorldScript.instance.mSegmentUpdater.updateList[segmentIndex];
+                    if (updateSegment == null || !updateSegment.mbInitialGenerationComplete || updateSegment.mEntities?[entityTypeIndex] == null)
+                        continue;
+
+                    int count = updateSegment.mEntities[entityTypeIndex].Count;
+                    if (count <= 0)
+                        continue;
+
+                    for (int entityIndex = 0; entityIndex < count; ++entityIndex)
+                    {
+                        if (!(updateSegment.mEntities[entityTypeIndex][entityIndex] is HiveEntity hiveEntity))
+                            continue;
+
+                        float sqrMagnitude = new Vector3(CentralPowerHub.mnCPH_X - hiveEntity.mnX, CentralPowerHub.mnCPH_Y - hiveEntity.mnY,
+                            CentralPowerHub.mnCPH_Z - hiveEntity.mnZ).sqrMagnitude;
+                        if (sqrMagnitude < currentClosestDistance)
+                        {
+                            mClosestHiveEntity = hiveEntity;
+                            currentClosestDistance = sqrMagnitude;
+                        }
+                    }
+                }
+
+                mHivemindAvailable = mClosestHiveEntity != null;
+                if (mHivemindAvailable)
+                {
+                    Logging.LogMessage("Closest hivemind set at " + mClosestHiveEntity.ToPositionString(), 2);
+                }
+                else Logging.LogMessage("Closest hive mind entity search failed", 2);
+            }
+            catch (Exception e)
             {
-                Logging.LogMessage("Closest hivemind set at " + mClosestHiveEntity.ToPositionString(), 2);
+                Logging.LogException(e);
             }
-            else Logging.LogMessage("Closest hive mind entity search failed", 2);
-
         }
     }
 }
