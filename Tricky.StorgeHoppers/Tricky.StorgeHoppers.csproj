@@ -131,6 +131,17 @@ xcopy "$(ProjectDir)\Xml" %25LOCALAPPDATA%25\ProjectorGames\FortressCraft\Mods\T
 copy $(ProjectDir)\mod.config %25LOCALAPPDATA%25\ProjectorGames\FortressCraft\Mods\Tricky.ExtraStorageHoppers\9
 copy $(ProjectDir)\WorkshopFileId.config %25LOCALAPPDATA%25\ProjectorGames\FortressCraft\Mods\Tricky.ExtraStorageHoppers
 
+if "$(ConfigurationName)"=="Debug" ( 
+$(ProjectDir)..\FCEDebug\pdb2mdb.exe $(TargetPath)
+copy $(TargetDir)$(TargetName).pdb %25LOCALAPPDATA%25\ProjectorGames\FortressCraft\Mods\Tricky.ExtraStorageHoppers\9
+copy $(TargetDir)$(TargetName).dll.mdb %25LOCALAPPDATA%25\ProjectorGames\FortressCraft\Mods\Tricky.ExtraStorageHoppers\9
+)
+
+if "$(ConfigurationName)"=="Release" ( 
+$(ProjectDir)..\FCEDebug\pdb2mdb.exe $(TargetPath)
+del %25LOCALAPPDATA%25\ProjectorGames\FortressCraft\Mods\Tricky.ExtraStorageHoppers\9\$(TargetName).pdb
+del %25LOCALAPPDATA%25\ProjectorGames\FortressCraft\Mods\Tricky.ExtraStorageHoppers\9\$(TargetName).dll.mdb 
+)
 
 </PostBuildEvent>
   </PropertyGroup>

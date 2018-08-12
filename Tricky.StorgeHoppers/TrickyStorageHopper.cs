@@ -1696,7 +1696,7 @@ namespace Tricky.ExtraStorageHoppers
             Logging.LogMessage(this, "Recount used capacity:" + UsedCapacity, 2);
             MarkDirtyDelayed();
             RequestImmediateNetworkUpdate();
-            return true;
+            return returnedAmount > 0;
         }
 
 

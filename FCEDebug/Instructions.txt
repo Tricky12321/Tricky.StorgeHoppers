@@ -1,0 +1,48 @@
+
+--Game Folder Prep
+
+Copy the contents of GameFolder to your 64bit game folder
+
+-Windows 10’s Creators Update and Newer Only
+
+Just run MakeDebugJunction.bat
+
+-Older Windows 10 and Other Windows
+
+You need to run MakeDebugJunction.bat as admin from the 64bit game folder.
+Good Luck!
+
+
+
+
+--Debug Symbol Building
+
+PDBs dont work with Mono, you need an MDB.
+
+'pdb2mdb.exe' is in the folder, and is needed to convert a PDB to MDB.
+Run it like "pdb2mdb.exe plugin_pacas00.CPHPatcher.dll" as part of your build process.
+
+I generally use this in a post build for one of my unreleased nightmares.
+
+
+pdb2mdb.exe plugin_pacas00.CPHPatcher.dll
+copy plugin_pacas00.CPHPatcher.dll "C:\Users\Peter\AppData\Local\ProjectorGames\FortressCraft\Mods\pacas00.CPHPatcher\1" /Y
+copy plugin_pacas00.CPHPatcher.pdb "C:\Users\Peter\AppData\Local\ProjectorGames\FortressCraft\Mods\pacas00.CPHPatcher\1" /Y
+copy plugin_pacas00.CPHPatcher.dll.mdb "C:\Users\Peter\AppData\Local\ProjectorGames\FortressCraft\Mods\pacas00.CPHPatcher\1" /Y
+
+
+
+--Updating the Unity Player debug binaries.
+
+Did DJ Update? Are you trying to use this on any other unity game? 
+Your gonna need to find the right Unity binaries. Files listed here-on will differ between Unity versions.
+Right now DJ uses Unity 5.6.5f1, Any other Unity game may differ.
+
+Currently, Unity stores it's player binaries for the windows standalone player in, by default,
+
+C:\Program Files\Unity\Editor\Data\PlaybackEngines\windowsstandalonesupport\Variations
+
+For Win64 with mono, use win64_development_mono
+
+Generally, i only copy player_win.exe and player_win_development_x64.pdb.
+Which you need to rename to FC_64_debug.exe and FC_64_debug.pdb respectively.
