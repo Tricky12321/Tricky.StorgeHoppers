@@ -212,10 +212,10 @@ namespace Tricky.ExtraStorageHoppers
         public eHopperPermissions Permissions { get; private set; }
 
         /// <summary>
-        /// Gets a value indicating if inventory extraction is allowed by neighboring conveyor entities. Always returns false as this is 
-        /// managed by this hopper instance based on the locked state of the side.
-        /// </summary>
-        public bool InventoryExtractionPermitted => false;
+        /// Gets a value indicating if inventory extraction is allowed by neighboring conveyor entities. Always returns true for this
+        /// machine as it has to extraction delay.
+        /// </summary> 
+        public bool InventoryExtractionPermitted => true;
 
         /// <summary>
         /// Get the current total capacity.
