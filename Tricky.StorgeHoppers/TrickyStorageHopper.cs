@@ -2734,10 +2734,12 @@ namespace Tricky.ExtraStorageHoppers
         /// </summary>
         public override void SpawnGameObject()
         {
-            mObjectType = SpawnableObjectEnum.LogisticsHopper;
-            base.SpawnGameObject();
-        }
+            if (DoNotSpawn)
+                return;
+            mWrapper = SpawnableObjectManagerScript.instance.SpawnObject(eGameObjectWrapperType.Entity, mObjectType, mnX, mnY, mnZ, mFlags, this);
+            mWrapper.mSpawnOrder = null;
 
+        }
 
         /// <summary>
         /// Handle UnityUpdate.
@@ -2753,9 +2755,29 @@ namespace Tricky.ExtraStorageHoppers
                 // If not linked then initialize the game objects.
                 if (!mLinkedToGameObject)
                 {
-                    // If no wrapper game object then leave.
-                    if (mWrapper == null || !mWrapper.mbHasGameObject)
+                    // If there is no wrapper than leave.
+                    if (mWrapper == null)
                         return;
+
+                    // Create game object list if missing.
+                    if (mWrapper.mGameObjectList == null)
+                        mWrapper.mGameObjectList = new List<GameObject>();
+
+                    // Create hopper object.
+                    Quaternion rotationQuaternion = SegmentCustomRenderer.GetRotationQuaternion(mFlags);
+                    Vector3 position = WorldScript.instance.mPlayerFrustrum.GetCoordsToUnity(mnX, mnY, mnZ) + new Vector3(0.5f, 0.5f, 0.5f);
+                    GameObject gameObject = UnityEngine.Object.Instantiate(SpawnableObjectManagerScript.instance.maSpawnableObjects[(int)mObjectType], position, rotationQuaternion);
+                    if (gameObject == null)
+                    {
+                        Logging.LogMissingUnityObject(mObjectType.ToString());
+                        mUnityInitializationError = true;
+                        return;
+                    }
+
+                    mWrapper.mGameObjectList.Add(gameObject);
+                    mWrapper.mUnityPosition = position;
+                    mWrapper.mbHasGameObject = true;
+                    gameObject.GetComponent<SpawnableObjectScript>().wrapper = mWrapper;
 
                     try
                     {
@@ -2795,6 +2817,10 @@ namespace Tricky.ExtraStorageHoppers
 
                         mPreviousPermissions = eHopperPermissions.eNumPermissions;
                         SetHoloStatus();
+
+                        // Show the initialized machine.
+                        mWrapper.mGameObjectList[0].SetActive(true);
+
                         mForceTextUpdate = true;
                         mLinkedToGameObject = true;
                     }
