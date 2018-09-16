@@ -1636,6 +1636,17 @@ namespace Tricky.ExtraStorageHoppers
 
 
                 inventoryStack = mInventory[returnStorageId];
+
+                // Final count inventory stack count check for direct exemplar cases.
+                if (inventoryStack.Count == 0)
+                {
+                    returnedAmount = 0;
+                    returnedCubeType = 0;
+                    returnedCubeValue = 0;
+                    returnedItem = null;
+                    return false;
+                }
+
                 switch (inventoryStack.ItemType)
                 {
                     case ItemType.ItemCubeStack:
