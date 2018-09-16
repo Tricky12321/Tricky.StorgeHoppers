@@ -788,7 +788,9 @@ namespace Tricky.ExtraStorageHoppers
                     {
                         int count = inventoryStack.Count;
                         newUsedCapacity += count;
-                        if (count > 0)
+                        if (inventoryStack.ItemType == ItemType.ItemSingle)
+                            newSlotCount += count;
+                        else if (count > 0)
                             newSlotCount++;
                     }
 
@@ -1609,7 +1611,7 @@ namespace Tricky.ExtraStorageHoppers
                         {
                             bool isStack = inventoryStack.ItemType == ItemType.ItemCubeStack || inventoryStack.ItemType == ItemType.ItemStack;
                             if (isStack && inventoryStackCount >= minimumAmount && maximumAmount > 0 ||
-                                !isStack && minimumAmount <= 1 && maximumAmount > 0)
+                                !isStack && inventoryStackCount > 0 && minimumAmount <= 1 && maximumAmount > 0)
                                 returnStorageId = storageId;
                         }
 
@@ -1910,7 +1912,7 @@ namespace Tricky.ExtraStorageHoppers
                 int currentStackSize = ItemManager.GetCurrentStackSize(item);
                 int amount = currentStackSize;
 
-                int remainingCapacity = RemainingCapacity;
+                int remainingCapacity = RemainingCapacity; 
                 if (remainingCapacity <= 0)
                     return 0;
 

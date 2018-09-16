@@ -217,7 +217,7 @@ namespace Tricky.ExtraStorageHoppers
             mDisplayedItemBaseList = hopper.GetInventory();
             int newSlotCount = hopper.mValue == 0 ? 0 : mDisplayedItemBaseList.Count;
 
-            for (int index=0; index < mSlotCount; index++)
+            for (int index=0; index < Math.Max(mSlotCount, newSlotCount); index++)
             {
                 ItemBase itemBase = index < mDisplayedItemBaseList.Count ? mDisplayedItemBaseList[index] : null;
                 int currentStackSize = itemBase != null ? ItemManager.GetCurrentStackSize(itemBase) : 0;
@@ -237,7 +237,8 @@ namespace Tricky.ExtraStorageHoppers
                 slotIndex++;
             }
 
-            mSlotCount = newSlotCount;
+            if (newSlotCount > mSlotCount)
+                mSlotCount = newSlotCount;
 
 
             mDirty = false;
