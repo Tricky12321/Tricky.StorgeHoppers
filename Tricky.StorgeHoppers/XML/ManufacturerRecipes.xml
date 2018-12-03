@@ -212,7 +212,6 @@
         <Key>Tricky.100SlotStorageHopper</Key>
         <Amount>1</Amount>
       </CraftCost>
-      </CraftCost>
     </Costs>
     <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
     <Hint>Can be connected to other machines for automation.</Hint>
