@@ -56,7 +56,7 @@
       </CraftCost>
       <CraftCost>
         <Key>IronGear</Key>
-        <Amount>2</Amount>
+        <Amount>5</Amount>
       </CraftCost>
       <CraftCost>
         <Key>PrimaryUpgradeModule</Key>
@@ -75,7 +75,7 @@
     <Costs>
       <CraftCost>
         <Key>LightWeightMachineHousing</Key>
-        <Amount>2</Amount>
+        <Amount>1</Amount>
       </CraftCost>
       <CraftCost>
         <Key>IronGear</Key>
@@ -98,11 +98,11 @@
     <Costs>
       <CraftCost>
         <Key>LightWeightMachineHousing</Key>
-        <Amount>2</Amount>
+        <Amount>1</Amount>
       </CraftCost>
       <CraftCost>
         <Key>IronGear</Key>
-        <Amount>7</Amount>
+        <Amount>5</Amount>
       </CraftCost>
       <CraftCost>
         <Key>PrimaryUpgradeModule</Key>
@@ -129,7 +129,7 @@
       </CraftCost>
       <CraftCost>
         <Key>PrimaryUpgradeModule</Key>
-        <Amount>1</Amount>
+        <Amount>2</Amount>
       </CraftCost>
     </Costs>
     <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
@@ -143,15 +143,19 @@
     <CraftedAmount>1</CraftedAmount>
     <Costs>
       <CraftCost>
-        <Key>TitaniumPlate</Key>
-        <Amount>5</Amount>
+        <Key>TitaniumHousing</Key>
+        <Amount>1</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>FortifiedPCB</Key>
-        <Amount>3</Amount>
+        <Key>SecondaryUpgradeModule</Key>
+        <Amount>1</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>StorageHopper</Key>
+        <Key>GoldFoil</Key>
+        <Amount>1</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>Tricky.100SlotStorageHopper</Key>
         <Amount>1</Amount>
       </CraftCost>
     </Costs>
@@ -166,15 +170,19 @@
     <CraftedAmount>1</CraftedAmount>
     <Costs>
       <CraftCost>
-        <Key>TitaniumPlate</Key>
-        <Amount>10</Amount>
+        <Key>TitaniumHousing</Key>
+        <Amount>1</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>FortifiedPCB</Key>
-        <Amount>5</Amount>
+        <Key>SecondaryUpgradeModule</Key>
+        <Amount>1</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>StorageHopper</Key>
+        <Key>GoldFoil</Key>
+        <Amount>1</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>Tricky.100SlotStorageHopper</Key>
         <Amount>1</Amount>
       </CraftCost>
     </Costs>
@@ -189,16 +197,21 @@
     <CraftedAmount>1</CraftedAmount>
     <Costs>
       <CraftCost>
-        <Key>TitaniumPlate</Key>
-        <Amount>20</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>FortifiedPCB</Key>
-        <Amount>10</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>StorageHopper</Key>
+        <Key>TitaniumHousing</Key>
         <Amount>2</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>SecondaryUpgradeModule</Key>
+        <Amount>2</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>GoldFoil</Key>
+        <Amount>2</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>Tricky.100SlotStorageHopper</Key>
+        <Amount>1</Amount>
+      </CraftCost>
       </CraftCost>
     </Costs>
     <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
@@ -222,7 +235,7 @@
       </CraftCost>
       <CraftCost>
         <Key>Tricky.HugeStorageHopper</Key>
-        <Amount>2</Amount>
+        <Amount>1</Amount>
       </CraftCost>
     </Costs>
     <ResearchRequirements>
@@ -240,14 +253,14 @@
     <Costs>
       <CraftCost>
         <Key>ChromedMachineBlock</Key>
-        <Amount>15</Amount>
+        <Amount>20</Amount>
       </CraftCost>
       <CraftCost>
         <Key>MagneticMachineBlock</Key>
-        <Amount>15</Amount>
+        <Amount>20</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>Tricky.500SlotStorageHopper</Key>
+        <Key>Tricky.HugeStorageHopper</Key>
         <Amount>1</Amount>
       </CraftCost>
     </Costs>
@@ -266,14 +279,14 @@
     <Costs>
       <CraftCost>
         <Key>ChromedMachineBlock</Key>
-        <Amount>20</Amount>
+        <Amount>40</Amount>
       </CraftCost>
       <CraftCost>
         <Key>MagneticMachineBlock</Key>
-        <Amount>20</Amount>
+        <Amount>40</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>Tricky.750SlotStorageHopper</Key>
+        <Key>Tricky.HugeStorageHopper</Key>
         <Amount>1</Amount>
       </CraftCost>
     </Costs>
@@ -292,16 +305,16 @@
     <CraftedAmount>1</CraftedAmount>
     <Costs>
       <CraftCost>
-        <Key>TitaniumPlate</Key>
-        <Amount>150</Amount>
+        <Key>TitaniumHousing</Key>
+        <Amount>10</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>FortifiedPCB</Key>
-        <Amount>100</Amount>
+        <Key>SecondaryUpgradeModule</Key>
+        <Amount>10</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>GoldWire</Key>
-        <Amount>100</Amount>
+        <Key>GoldFoil</Key>
+        <Amount>10</Amount>
       </CraftCost>
       <CraftCost>
         <Key>Tricky.HugeStorageHopper</Key>
@@ -324,16 +337,16 @@
         <Amount>1</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>TitaniumPlate</Key>
-        <Amount>10</Amount>
+        <Key>TitaniumHousing</Key>
+        <Amount>5</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>FortifiedPCB</Key>
-        <Amount>20</Amount>
+        <Key>SecondaryUpgradeModule</Key>
+        <Amount>5</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>GoldWire</Key>
-        <Amount>15</Amount>
+        <Key>GoldFoil</Key>
+        <Amount>5</Amount>
       </CraftCost>
     </Costs>
     <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
@@ -347,20 +360,20 @@
     <CraftedAmount>1</CraftedAmount>
     <Costs>
       <CraftCost>
-        <Key>Tricky.500SlotHopperx</Key>
+        <Key>Tricky.HugeStorageHopper</Key>
         <Amount>1</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>TitaniumPlate</Key>
+        <Key>TitaniumHousing</Key>
         <Amount>10</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>FortifiedPCB</Key>
-        <Amount>20</Amount>
+        <Key>SecondaryUpgradeModule</Key>
+        <Amount>10</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>GoldWire</Key>
-        <Amount>15</Amount>
+        <Key>GoldFoil</Key>
+        <Amount>10</Amount>
       </CraftCost>
     </Costs>
     <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
@@ -374,20 +387,20 @@
     <CraftedAmount>1</CraftedAmount>
     <Costs>
       <CraftCost>
-        <Key>Tricky.1000SlotHopperx</Key>
+        <Key>Tricky.HugeStorageHopper</Key>
         <Amount>1</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>TitaniumPlate</Key>
-        <Amount>10</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>FortifiedPCB</Key>
+        <Key>TitaniumHousing</Key>
         <Amount>20</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>GoldWire</Key>
-        <Amount>15</Amount>
+        <Key>SecondaryUpgradeModule</Key>
+        <Amount>20</Amount>
+      </CraftCost>
+      <CraftCost>
+        <Key>GoldFoil</Key>
+        <Amount>20</Amount>
       </CraftCost>
     </Costs>
     <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
@@ -429,14 +442,14 @@
     <Costs>
       <CraftCost>
         <Key>ChromedMachineBlock</Key>
-        <Amount>10</Amount>
+        <Amount>40</Amount>
       </CraftCost>
       <CraftCost>
         <Key>MagneticMachineBlock</Key>
-        <Amount>10</Amount>
+        <Amount>40</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>Tricky.3000SlotHopperx</Key>
+        <Key>Tricky.2000SlotHopperx</Key>
         <Amount>1</Amount>
       </CraftCost>
     </Costs>
@@ -456,7 +469,7 @@
     <Costs>
       <CraftCost>
         <Key>LightWeightMachineHousing</Key>
-        <Amount>5</Amount>
+        <Amount>2</Amount>
       </CraftCost>
       <CraftCost>
         <Key>IronGear</Key>
@@ -464,7 +477,7 @@
       </CraftCost>
       <CraftCost>
         <Key>PrimaryUpgradeModule</Key>
-        <Amount>1</Amount>
+        <Amount>2</Amount>
       </CraftCost>
     </Costs>
     <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
