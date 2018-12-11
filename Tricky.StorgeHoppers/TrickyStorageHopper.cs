@@ -817,7 +817,8 @@ namespace Tricky.ExtraStorageHoppers
         /// <returns>True if successful, otherwise false.</returns>
         public bool AddItem(ItemBase itemToAdd)
         {
-            Logging.LogMessage(this, "AddItem Started for " + (itemToAdd == null ? "<NULL>" : itemToAdd.GetDisplayString()), 2);
+            Logging.LogMessage(this, "AddItem Started for " +
+                                     (itemToAdd == null ? "<NULL>" : itemToAdd.GetDisplayString() + " of type: " + itemToAdd.mType), 2);
 
             lock (mInventory)
             {
@@ -870,8 +871,8 @@ namespace Tricky.ExtraStorageHoppers
                     Logging.LogMessage(this, "Storage Id:" + storageId, 2);
                     if (!mInventory.TryGetValue(storageId, out InventoryStack inventoryStack))
                     {
-                        mInventory[storageId] = inventoryStack = new InventoryStack(itemToAdd.mType, storageId);
-                        Logging.LogMessage(this, "Create New InventoryStack for storage Id:" + storageId, 2);
+                        mInventory[storageId] = inventoryStack = new InventoryStack(this.ToCubeCoord(), itemToAdd.mType, storageId);
+                        Logging.LogMessage(this, "Create New InventoryStack for storage Id:" + storageId + " of type " + inventoryStack.ItemType, 2);
                     }
 
                     switch (itemToAdd.mType)
@@ -965,7 +966,7 @@ namespace Tricky.ExtraStorageHoppers
                         return false;
 
                     if (!mInventory.TryGetValue(storageId, out InventoryStack inventoryStack))
-                        mInventory[storageId] = inventoryStack = new InventoryStack(ItemType.ItemCubeStack, storageId);
+                        mInventory[storageId] = inventoryStack = new InventoryStack(this.ToCubeCoord(), ItemType.ItemCubeStack, storageId);
 
                     ((ItemCubeStack) inventoryStack.Item).mnAmount++;
 
@@ -1033,7 +1034,7 @@ namespace Tricky.ExtraStorageHoppers
                 uint storageId = ((uint) cubeType << 16) + cubeValue;
 
                 if (!mInventory.TryGetValue(storageId, out InventoryStack inventoryStack))
-                    mInventory[storageId] = inventoryStack = new InventoryStack(ItemType.ItemCubeStack, storageId);
+                    mInventory[storageId] = inventoryStack = new InventoryStack(this.ToCubeCoord(), ItemType.ItemCubeStack, storageId);
 
                 ItemCubeStack itemCubeStack = (ItemCubeStack) inventoryStack.Item;
                 if (itemCubeStack.mnAmount == 0)
@@ -2258,7 +2259,7 @@ namespace Tricky.ExtraStorageHoppers
 
                 for (int index = 0; index < inventoryCount; index++)
                 {
-                    InventoryStack inventoryStack = InventoryStack.Read(reader);
+                    InventoryStack inventoryStack = InventoryStack.Read(this.ToCubeCoord(), reader);
                     mInventory[inventoryStack.StorageId] = inventoryStack;
                 }
 

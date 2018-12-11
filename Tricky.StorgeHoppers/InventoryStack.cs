@@ -21,6 +21,11 @@ namespace Tricky.ExtraStorageHoppers
     public class InventoryStack
     {
         /// <summary>
+        /// Gets the owner coordinate.
+        /// </summary>
+        public CubeCoord OwnerCoordinate { get; }
+
+        /// <summary>
         /// Gets the item type.
         /// </summary>
         public ItemType ItemType { get; }
@@ -75,17 +80,24 @@ namespace Tricky.ExtraStorageHoppers
                             Logging.LogMessage("Count on " + StorageId + " = " + amount, 2);
                             return amount;
                         }
+
                         case ItemType.ItemStack:
                         case ItemType.ItemSingle:
                             if (Item == null)
                             {
-                                Logging.LogError("NULL item on inventory ItemStack - Correcting");
+                                Logging.LogError("Location: " + OwnerCoordinate.ToPositionString() + "\nNULL item on inventory ItemStack - Correcting");
                                 Item = new ItemStack((int) StorageId, 0);
                             }
 
+                            if (!(Item is ItemStack))
+                            {
+                                Logging.LogError("Location: " + OwnerCoordinate.ToPositionString() + "\nIncorrect stack type of " + Item.GetType().Name +
+                                                 " for expected of " + ItemType);
+                            }
                             amount = ((ItemStack) Item).mnAmount;
                             Logging.LogMessage("Count on " + StorageId + " = " + amount, 2);
                             return amount;
+
                         default:
                             Logging.LogMessage("Count on " + StorageId + " = " + mSubStackCount, 2);
                             return mSubStackCount;
@@ -93,7 +105,7 @@ namespace Tricky.ExtraStorageHoppers
                 }
                 catch (Exception e)
                 {
-                    Logging.LogException(e);
+                    Logging.LogException(e, "Location: " + OwnerCoordinate.ToPositionString());
                     return 0;
                 }
             }
@@ -132,11 +144,13 @@ namespace Tricky.ExtraStorageHoppers
         /// <summary>
         /// Constructor InventoryStack.
         /// </summary>
+        /// <param name="ownerCoordinate">Owner coordinate.</param>
         /// <param name="itemType">Item type.</param>
         /// <param name="storageId">Storage Id.</param>
-        public InventoryStack(ItemType itemType, uint storageId)
+        public InventoryStack(CubeCoord ownerCoordinate, ItemType itemType, uint storageId)
         {
-            ItemType = itemType;
+            OwnerCoordinate = ownerCoordinate;
+            ItemType = itemType == ItemType.ItemSingle ? ItemType.ItemStack : itemType;
             StorageId = storageId;
 
             if (itemType == ItemType.ItemCubeStack)
@@ -403,22 +417,34 @@ namespace Tricky.ExtraStorageHoppers
         /// <summary>
         /// Reads an InventoryStack from binary data and returns an InventoryStack object from it.
         /// </summary>
+        /// <param name="ownerCoordinate">Owner coordinate.</param>
         /// <param name="reader">Binary reader.</param>
         /// <returns>New InventoryStack object.</returns>
-        public static InventoryStack Read(BinaryReader reader)
+        public static InventoryStack Read(CubeCoord ownerCoordinate, BinaryReader reader)
         {
             ItemType itemType = (ItemType) reader.ReadByte();
             uint storageId = reader.ReadUInt32();
-            InventoryStack inventoryStack = new InventoryStack(itemType, storageId);
+            InventoryStack inventoryStack = new InventoryStack(ownerCoordinate, itemType, storageId);
 
-            Logging.LogMessage("Read - Storage Id:" + storageId + " Item Type:" + itemType + " IsStackItem:" + inventoryStack.IsStackItem + " Cube:" + inventoryStack.CubeType +
+            Logging.LogMessage("Location: " + ownerCoordinate.ToPositionString() + "\nRead - Storage Id:" + storageId + " Item Type:" + itemType +
+                               " IsStackItem:" + inventoryStack.IsStackItem + " Cube:" + inventoryStack.CubeType +
                                " Value:" + inventoryStack.CubeValue, 1);
 
             switch (itemType)
             {
                 case ItemType.ItemCubeStack:
+                    inventoryStack.Item = ItemFile.DeserialiseItem(reader);
+                    if (Logging.LoggingLevel >= 2)
+                        Logging.LogMessage("Deserialize item " + inventoryStack.Item.GetDisplayString(), 2);
+                    break;
+
                 case ItemType.ItemStack:
                     inventoryStack.Item = ItemFile.DeserialiseItem(reader);
+                    if (inventoryStack.Item.mType != ItemType.ItemStack)
+                    {
+                        inventoryStack.Item = new ItemStack(inventoryStack.Item.mnItemID, 1);
+                        Logging.LogMessage("Corrected invalid item stack type");
+                    }
                     if (Logging.LoggingLevel >= 2)
                         Logging.LogMessage("Deserialize item " + inventoryStack.Item.GetDisplayString(), 2);
                     break;
