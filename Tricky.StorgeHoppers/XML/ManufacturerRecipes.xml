@@ -9,12 +9,12 @@
     <CraftedAmount>1</CraftedAmount>
     <Costs>
       <CraftCost>
-        <Key>TinBar</Key>
-        <Amount>2</Amount>
+        <Key>TinPlate</Key>
+        <Amount>1</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>CopperBar</Key>
-        <Amount>2</Amount>
+        <Key>CopperWire</Key>
+        <Amount>1</Amount>
       </CraftCost>
     </Costs>
     <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
@@ -28,16 +28,12 @@
     <CraftedAmount>1</CraftedAmount>
     <Costs>
       <CraftCost>
-        <Key>TinBar</Key>
+        <Key>TinPlate</Key>
         <Amount>2</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>CopperBar</Key>
+        <Key>CopperWire</Key>
         <Amount>2</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>PrimaryUpgradeModule</Key>
-        <Amount>1</Amount>
       </CraftCost>
     </Costs>
     <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
@@ -48,19 +44,15 @@
     <Category>storage</Category>
     <Tier>0</Tier>
     <CraftedKey>Tricky.MediumStorageHopper</CraftedKey>
-    <CraftedAmount>1</CraftedAmount>
+    <CraftedAmount>2</CraftedAmount>
     <Costs>
       <CraftCost>
-        <Key>LightWeightMachineHousing</Key>
-        <Amount>1</Amount>
+        <Key>TinPlate</Key>
+        <Amount>3</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>IronGear</Key>
-        <Amount>5</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>PrimaryUpgradeModule</Key>
-        <Amount>1</Amount>
+        <Key>CopperWire</Key>
+        <Amount>3</Amount>
       </CraftCost>
     </Costs>
     <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
@@ -81,10 +73,6 @@
         <Key>IronGear</Key>
         <Amount>5</Amount>
       </CraftCost>
-      <CraftCost>
-        <Key>PrimaryUpgradeModule</Key>
-        <Amount>1</Amount>
-      </CraftCost>
     </Costs>
     <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
     <Hint>Can be connected to other machines for automation.</Hint>
@@ -98,15 +86,11 @@
     <Costs>
       <CraftCost>
         <Key>LightWeightMachineHousing</Key>
-        <Amount>1</Amount>
+        <Amount>2</Amount>
       </CraftCost>
       <CraftCost>
         <Key>IronGear</Key>
-        <Amount>5</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>PrimaryUpgradeModule</Key>
-        <Amount>1</Amount>
+        <Amount>10</Amount>
       </CraftCost>
     </Costs>
     <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
@@ -127,10 +111,6 @@
         <Key>IronGear</Key>
         <Amount>10</Amount>
       </CraftCost>
-      <CraftCost>
-        <Key>PrimaryUpgradeModule</Key>
-        <Amount>2</Amount>
-      </CraftCost>
     </Costs>
     <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
     <Hint>Can be connected to other machines for automation.</Hint>
@@ -144,10 +124,6 @@
     <Costs>
       <CraftCost>
         <Key>TitaniumHousing</Key>
-        <Amount>1</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>SecondaryUpgradeModule</Key>
         <Amount>1</Amount>
       </CraftCost>
       <CraftCost>
@@ -174,10 +150,6 @@
         <Amount>1</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>SecondaryUpgradeModule</Key>
-        <Amount>1</Amount>
-      </CraftCost>
-      <CraftCost>
         <Key>GoldFoil</Key>
         <Amount>1</Amount>
       </CraftCost>
@@ -198,10 +170,6 @@
     <Costs>
       <CraftCost>
         <Key>TitaniumHousing</Key>
-        <Amount>2</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>SecondaryUpgradeModule</Key>
         <Amount>2</Amount>
       </CraftCost>
       <CraftCost>
@@ -252,11 +220,11 @@
     <Costs>
       <CraftCost>
         <Key>ChromedMachineBlock</Key>
-        <Amount>20</Amount>
+        <Amount>15</Amount>
       </CraftCost>
       <CraftCost>
         <Key>MagneticMachineBlock</Key>
-        <Amount>20</Amount>
+        <Amount>15</Amount>
       </CraftCost>
       <CraftCost>
         <Key>Tricky.HugeStorageHopper</Key>
@@ -278,11 +246,11 @@
     <Costs>
       <CraftCost>
         <Key>ChromedMachineBlock</Key>
-        <Amount>40</Amount>
+        <Amount>20</Amount>
       </CraftCost>
       <CraftCost>
         <Key>MagneticMachineBlock</Key>
-        <Amount>40</Amount>
+        <Amount>20</Amount>
       </CraftCost>
       <CraftCost>
         <Key>Tricky.HugeStorageHopper</Key>
@@ -308,16 +276,12 @@
         <Amount>10</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>SecondaryUpgradeModule</Key>
-        <Amount>10</Amount>
-      </CraftCost>
-      <CraftCost>
         <Key>GoldFoil</Key>
         <Amount>10</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>Tricky.HugeStorageHopper</Key>
-        <Amount>2</Amount>
+        <Key>Tricky.100SlotStorageHopper</Key>
+        <Amount>1</Amount>
       </CraftCost>
     </Costs>
     <Description>Deletes Items faster then you can blink! Great for handling waste from quarry or Organic drops. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
@@ -332,15 +296,11 @@
     <CraftedAmount>1</CraftedAmount>
     <Costs>
       <CraftCost>
-        <Key>Tricky.HugeStorageHopper</Key>
+        <Key>Tricky.100SlotStorageHopper</Key>
         <Amount>1</Amount>
       </CraftCost>
       <CraftCost>
         <Key>TitaniumHousing</Key>
-        <Amount>5</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>SecondaryUpgradeModule</Key>
         <Amount>5</Amount>
       </CraftCost>
       <CraftCost>
@@ -359,15 +319,11 @@
     <CraftedAmount>1</CraftedAmount>
     <Costs>
       <CraftCost>
-        <Key>Tricky.HugeStorageHopper</Key>
+        <Key>Tricky.100SlotStorageHopper</Key>
         <Amount>1</Amount>
       </CraftCost>
       <CraftCost>
         <Key>TitaniumHousing</Key>
-        <Amount>10</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>SecondaryUpgradeModule</Key>
         <Amount>10</Amount>
       </CraftCost>
       <CraftCost>
@@ -386,15 +342,11 @@
     <CraftedAmount>1</CraftedAmount>
     <Costs>
       <CraftCost>
-        <Key>Tricky.HugeStorageHopper</Key>
+        <Key>Tricky.100SlotStorageHopper</Key>
         <Amount>1</Amount>
       </CraftCost>
       <CraftCost>
         <Key>TitaniumHousing</Key>
-        <Amount>20</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>SecondaryUpgradeModule</Key>
         <Amount>20</Amount>
       </CraftCost>
       <CraftCost>
@@ -415,14 +367,14 @@
     <Costs>
       <CraftCost>
         <Key>ChromedMachineBlock</Key>
-        <Amount>20</Amount>
+        <Amount>10</Amount>
       </CraftCost>
       <CraftCost>
         <Key>MagneticMachineBlock</Key>
-        <Amount>20</Amount>
+        <Amount>10</Amount>
       </CraftCost>
       <CraftCost>
-      <Key>Tricky.2000SlotHopperx</Key>
+      <Key>Tricky.HugeStorageHopper</Key>
       <Amount>1</Amount>
     </CraftCost>
     </Costs>
@@ -441,14 +393,14 @@
     <Costs>
       <CraftCost>
         <Key>ChromedMachineBlock</Key>
-        <Amount>40</Amount>
+        <Amount>20</Amount>
       </CraftCost>
       <CraftCost>
         <Key>MagneticMachineBlock</Key>
-        <Amount>40</Amount>
+        <Amount>20</Amount>
       </CraftCost>
       <CraftCost>
-        <Key>Tricky.2000SlotHopperx</Key>
+        <Key>Tricky.HugeStorageHopper</Key>
         <Amount>1</Amount>
       </CraftCost>
     </Costs>
@@ -473,10 +425,6 @@
       <CraftCost>
         <Key>IronGear</Key>
         <Amount>10</Amount>
-      </CraftCost>
-      <CraftCost>
-        <Key>PrimaryUpgradeModule</Key>
-        <Amount>2</Amount>
       </CraftCost>
     </Costs>
     <Description>Stores {0} and transfers quickly. Use to automate other machines. Set permissions appropriately to ensure correct material flow. See handbook entry.</Description>
