@@ -571,6 +571,23 @@ namespace MadVandal.FortressCraft
                     mGenericMachineBackgroundSmall.type = mOriginalBackgroundSpriteType;
                 }
 
+                // Adjust icon holder sizes back to original.
+                UISprite[] contentSprites = GenericMachinePanelScript.instance.Content_Icon_Holder.GetComponentsInChildren<UISprite>();
+                foreach (UISprite sprite in contentSprites)
+                {
+                    GenericMachineEntryScript script = sprite.GetComponent<GenericMachineEntryScript>();
+                    if (script == null)
+                        continue;
+
+                    switch (script.type)
+                    {
+                        case GenericMachineManager.GenericMachineEntry.Generic_Machine_Icon_Background:
+                            sprite.width = 60;
+                            sprite.height = 60;
+                            break;
+                    }
+                }
+
                 if (mScrollBar != null)
                     mScrollBar.localPosition = mOriginalPositions[mScrollBar];
                 if (mScrollBarSprite != null)
