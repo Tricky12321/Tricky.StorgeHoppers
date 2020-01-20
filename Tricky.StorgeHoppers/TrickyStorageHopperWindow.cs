@@ -416,24 +416,42 @@ namespace Tricky.ExtraStorageHoppers
                 mNetworkRedraw = true;
 
             if (hopper.IsEmpty())
+            {
+                Logging.LogMessage("Player " + (player.mUserName ?? "<NULL>") + " Take Items Returned False for IsEmpty", 2);
                 return false;
+            }
 
             ItemBase itemBase;
             if (item == null)
             {
                 if (!hopper.GetNextRemoveInventorySlot(out ItemType itemType, out int itemId, out ushort cubeType, out ushort cubeValue, out int amount))
+                {
+                    Logging.LogMessage(
+                        "GetNextRemoveInventorySlot Failed - Player: " + (player.mUserName ?? " < NULL > ") + " ItemType: " + itemType + " ItemId: " + itemId + " Cube: " + cubeType +
+                        " Value: " + cubeValue + " Amount: " + amount, 2);
                     return false;
+                }
 
-                Logging.LogMessage("GetNextRemoveInventorySlot - ItemType: " + itemType + " ItemId: " + itemId + " Cube: " + cubeType + " Value: " + cubeValue + " Amount: " + amount, 2);
+                Logging.LogMessage(
+                    "GetNextRemoveInventorySlot - Player: " + (player.mUserName ?? " < NULL > ") + " ItemType: " + itemType + " ItemId: " + itemId + " Cube: " + cubeType + " Value: " +
+                    cubeValue + " Amount: " + amount, 2);
                 if (amount == 0)
                     return false;
 
                 if (!hopper.TryExtract(eHopperRequestType.eAny, itemId, cubeType, cubeValue, false, 1, amount, false, false, false, true, out itemBase, out ushort _,
-                    out ushort _, out int _) || itemBase==null)
+                        out ushort _, out int _) || itemBase == null)
+                {
+                    Logging.LogMessage(
+                        "TryExtract Failed - Player: " + (player.mUserName ?? " < NULL > ") + " ItemType: " + itemType + " ItemId: " + itemId + " Cube: " + cubeType + " Value: " +
+                        cubeValue + " Amount: " + amount, 2);
                     return false;
+                }
 
                 if (!player.mInventory.AddItem(itemBase))
                 {
+                    Logging.LogMessage(
+                        "Inventory Add Failed - Player: " + (player.mUserName ?? " < NULL > ") + " ItemType: " + itemType + " ItemId: " + itemId + " Cube: " + cubeType + " Value: " +
+                        cubeValue + " Amount: " + amount, 2);
                     hopper.AddItem(itemBase);
                     return false;
                 }
@@ -445,10 +463,14 @@ namespace Tricky.ExtraStorageHoppers
                 {
                     ItemCubeStack itemCubeStack = (ItemCubeStack) itemBase;
                     if (!hopper.TryExtractCubes(hopper, itemCubeStack.mCubeType, itemCubeStack.mCubeValue, itemCubeStack.mnAmount))
+                    {
+                        Logging.LogMessage("TryExtractCubes Failed - Player: " + (player.mUserName ?? " < NULL > "), 2);
                         return false;
+                    }
 
                     if (!player.mInventory.AddItem(itemBase))
                     {
+                        Logging.LogMessage("Inventory Add Failed - Player: " + (player.mUserName ?? " < NULL > "), 2);
                         hopper.AddItem(itemBase);
                         return false;
                     }
@@ -457,10 +479,14 @@ namespace Tricky.ExtraStorageHoppers
                 else
                 {
                     if (!hopper.TryExtractItems(hopper, itemBase.mnItemID, itemBase.GetAmount()))
+                    {
+                        Logging.LogMessage("TryExtractItems Failed - Player: " + (player.mUserName ?? " < NULL > "), 2);
                         return false;
+                    }
 
                     if (!player.mInventory.AddItem(itemBase))
                     {
+                        Logging.LogMessage("Inventory Add Failed - Player: " + (player.mUserName ?? " < NULL > "), 2);
                         hopper.AddItem(itemBase);
                         return false;
                     }
@@ -473,7 +499,7 @@ namespace Tricky.ExtraStorageHoppers
                 Color lCol = Color.green;
                 if (itemBase.mType == ItemType.ItemCubeStack)
                 {
-                    ItemCubeStack itemCubeStack = (ItemCubeStack)itemBase;
+                    ItemCubeStack itemCubeStack = (ItemCubeStack) itemBase;
                     if (CubeHelper.IsGarbage(itemCubeStack.mCubeType))
                         lCol = Color.red;
                     if (CubeHelper.IsSmeltableOre(itemCubeStack.mCubeType))
@@ -495,7 +521,10 @@ namespace Tricky.ExtraStorageHoppers
 
             player.mInventory.VerifySuitUpgrades();
             if (!WorldScript.mbIsServer)
+            {
                 NetworkManager.instance.SendInterfaceCommand(nameof(TrickyStorageHopperWindow), COMMAND_TAKE_ITEMS, null, itemBase, hopper, 0.0f);
+                Logging.LogMessage("Sending Interface Command for TakeItems - Player: " + (player.mUserName ?? " < NULL > "), 2);
+            }
 
             mNetworkRedraw = true;
             mDirty = true;

@@ -2542,9 +2542,12 @@ namespace Tricky.ExtraStorageHoppers
             try
             {
                 // If the player is not looking at this object then return the last set popup text.
-                if (WorldScript.instance.localPlayerInstance.mPlayerBlockPicker.selectBlockType != TrickStorageHopperMod.HopperCubeType ||
-                    WorldScript.instance.localPlayerInstance.mPlayerBlockPicker.selectedEntity == null)
-                    return mPopupText;
+//                if (WorldScript.instance.localPlayerInstance.mPlayerBlockPicker.selectBlockType != TrickStorageHopperMod.HopperCubeType ||
+ //                   WorldScript.instance.localPlayerInstance.mPlayerBlockPicker.selectedEntity == null)
+  //              {
+   //                 Logging.LogMessage(this, "Not pointing at hopper, 2);
+    //                return mPopupText;
+     //           }
 
                 bool shiftDown = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
 
@@ -2644,9 +2647,11 @@ namespace Tricky.ExtraStorageHoppers
                     }
                     else if (!shiftDown && Input.GetButton("Extract") && mRetakeDebounce <= 0.0 && canExtract)
                     {
+                        Logging.LogMessage(this, "Player " + (WorldScript.instance.localPlayerInstance?.mPlayer?.mUserName ?? "<NULL>") + " Extract Key",2);
                         itemToStore = null;
                         if (TrickyStorageHopperWindow.TakeItems(WorldScript.mLocalPlayer, this, null))
                         {
+                            Logging.LogMessage(this, "Player " + (WorldScript.instance.localPlayerInstance?.mPlayer?.mUserName ?? "<NULL>") + " Take Items Returned True",2);
                             if (!WorldScript.mbIsServer)
                                 NetworkManager.instance.mClientThread.mPreviousTargetEntity = null;
                             UIManager.ForceNGUIUpdate = 0.1f;
@@ -2655,6 +2660,8 @@ namespace Tricky.ExtraStorageHoppers
                         }
                         else
                         {
+                            Logging.LogMessage(this, "Player " + (WorldScript.instance.localPlayerInstance?.mPlayer?.mUserName ?? "<NULL>") + " Take Items Rejected",2);
+
                             FloatingCombatTextManager.instance.QueueText(WorldScript.instance.localPlayerInstance.mPlayerBlockPicker.selectBlockX,
                                 WorldScript.instance.localPlayerInstance.mPlayerBlockPicker.selectBlockY,
                                 WorldScript.instance.localPlayerInstance.mPlayerBlockPicker.selectBlockZ, 1f,
@@ -2671,7 +2678,7 @@ namespace Tricky.ExtraStorageHoppers
                         UIManager.ForceNGUIUpdate = 0.1f;
                     }
 
-                    if (Input.GetButtonDown("Store") && UIManager.AllowInteracting && mMaximumCapacity - UsedCapacity > 0 && itemToStore != null &&
+                    if (Input.GetButtonDown("Store") && mMaximumCapacity - UsedCapacity > 0 && itemToStore != null &&
                         TrickyStorageHopperWindow.StoreItems(WorldScript.mLocalPlayer, this, itemToStore))
                         UIManager.ForceNGUIUpdate = 0.1f;
 
@@ -2693,6 +2700,8 @@ namespace Tricky.ExtraStorageHoppers
                         }
                     }
                 }
+                else Logging.LogMessage(this, "Player " + (WorldScript.instance.localPlayerInstance?.mPlayer?.mUserName ?? "<NULL>") + " does not have UI interaction access",2);
+
 
                 mPopupText = stringBuilder.ToString();
                 return mPopupText;
