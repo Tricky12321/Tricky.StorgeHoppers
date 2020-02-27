@@ -1,4 +1,5 @@
 ﻿using MadVandal.FortressCraft;
+using MadVandal.FortressCraft;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -89,11 +90,6 @@ namespace Tricky.ExtraStorageHoppers
         /// Vacuum segments.
         /// </summary>
         private Segment[,,] mVacuumSegment;
-
-        /// <summary>
-        /// Hopper re-balance cycle count.
-        /// </summary>
-        private int mHopperReBalanceCycle;
 
         /// <summary>
         /// Current active slot count.
@@ -385,9 +381,6 @@ namespace Tricky.ExtraStorageHoppers
                 if (WorldScript.mbIsServer)
                     UpdateSpoilage();
 
-                // Increment re-balance cycle count.
-                ++mHopperReBalanceCycle;
-
                 for (int loopCount = 0; loopCount < SEGMENT_CUBE_CHECKS; loopCount++)
                     ProcessNextAttachedEntitySide();
             }
@@ -450,7 +443,6 @@ namespace Tricky.ExtraStorageHoppers
                     CheckConsumer(index, mCheckSegments[index], cube, x, y, z);
 
                 // Check for neighboring hoppers.
-                //if (mHopperReBalanceCycle % 10 == 0)
                 CheckNeighborHopper(x, y, z, mCheckSegments[index], cube);
             }
         }
@@ -2330,6 +2322,7 @@ namespace Tricky.ExtraStorageHoppers
                 writer.Write(ContentSharingOn);
                 writer.Write(HivemindFeedingOn);
                 writer.Write(VoidHopperDeleteCount);
+                writer.Write(UsedCapacity);
                 WriteInventory(writer);
             }
             catch (Exception e)
@@ -2361,7 +2354,7 @@ namespace Tricky.ExtraStorageHoppers
                 ContentSharingOn = reader.ReadBoolean();
                 HivemindFeedingOn = reader.ReadBoolean();
                 VoidHopperDeleteCount = reader.ReadInt32();
-
+                UsedCapacity = reader.ReadInt32();
                 ReadInventory(reader);
                 mForceHoloUpdate = true;
                 mForceTextUpdate = true;
@@ -2700,7 +2693,8 @@ namespace Tricky.ExtraStorageHoppers
                         }
                     }
                 }
-                else Logging.LogMessage(this, "Player " + (WorldScript.instance.localPlayerInstance?.mPlayer?.mUserName ?? "<NULL>") + " does not have UI interaction access",2);
+                else if (!UIManager.CursorShown)
+                    Logging.LogMessage(this, "Player " + (WorldScript.instance.localPlayerInstance?.mPlayer?.mUserName ?? "<NULL>") + " does not have UI interaction access",2);
 
 
                 mPopupText = stringBuilder.ToString();
