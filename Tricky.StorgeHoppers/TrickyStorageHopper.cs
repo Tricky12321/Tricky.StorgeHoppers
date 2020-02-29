@@ -1649,13 +1649,14 @@ namespace Tricky.ExtraStorageHoppers
 
                     case ItemType.ItemStack:
                     {
-                        Logging.LogMessage(this, "TryExtract - Return ItemStack", 2);
                         ItemStack itemStack = (ItemStack) inventoryStack.Item;
                         int extractedStackAmount = Math.Min(itemStack.mnAmount, maximumAmount);
+                        Logging.LogMessage(this, "TryExtract - Return ItemStack Extracting " + extractedStackAmount, 2);
                         returnedCubeType = 0;
                         returnedCubeValue = 0;
                         returnedAmount = extractedStackAmount;
                         itemStack.mnAmount -= extractedStackAmount;
+                        Logging.LogMessage(this, "TryExtract - New InventoryStack Item Amount " + itemStack.mnAmount, 2);
                         returnedItem = new ItemStack(itemStack.mnItemID, extractedStackAmount);
                         break;
                     }
@@ -1666,7 +1667,7 @@ namespace Tricky.ExtraStorageHoppers
                         returnedCubeType = 0;
                         returnedCubeValue = 0;
                         returnedAmount = 1;
-                        itemStack.mnAmount -= 1;
+                        itemStack.mnAmount--;
                         returnedItem = new ItemSingle(itemStack.mnItemID);
                         break;
                     }
@@ -2285,7 +2286,6 @@ namespace Tricky.ExtraStorageHoppers
             {
                 List<InventoryStack> saveList = new List<InventoryStack>();
                 foreach (InventoryStack inventoryStack in mInventory.Values)
-                    if (inventoryStack.Count > 0)
                         saveList.Add(inventoryStack);
 
                 writer.Write((ushort) saveList.Count);
@@ -2355,6 +2355,13 @@ namespace Tricky.ExtraStorageHoppers
                 VoidHopperDeleteCount = reader.ReadInt32();
                 UsedCapacity = reader.ReadInt32();
                 ReadInventory(reader);
+
+                if (UsedCapacity==0)
+                {
+                    mLastItemAdded = null;
+                    mLastItemAddedText = "Empty";
+                }
+
                 mForceHoloUpdate = true;
                 mForceTextUpdate = true;
             }
@@ -3241,10 +3248,9 @@ namespace Tricky.ExtraStorageHoppers
 
                 mHivemindAvailable = mClosestHiveEntity != null;
                 if (mHivemindAvailable)
-                {
                     Logging.LogMessage("Closest hivemind set at " + mClosestHiveEntity.ToPositionString(), 2);
-                }
-                else Logging.LogMessage("Closest hive mind entity search failed", 2);
+                else
+                    Logging.LogMessage("Closest hive mind entity search failed", 2);
             }
             catch (Exception e)
             {
