@@ -1151,12 +1151,6 @@ namespace Tricky.ExtraStorageHoppers
 
                         // Remove the cube, set the output cube type/value, and leave.
                         RemoveInventoryCube(itemCubeStack.mCubeType, itemCubeStack.mCubeValue, 1);
-                        if (UsedCapacity == 0)
-                        {
-                            mLastItemAdded = null;
-                            mLastItemAddedText = "Empty";
-                        }
-
                         cubeType = itemCubeStack.mCubeType;
                         cubeValue = itemCubeStack.mCubeValue;
                         return;
@@ -1699,6 +1693,13 @@ namespace Tricky.ExtraStorageHoppers
             }
 
             CountSlots();
+
+            if (UsedCapacity == 0)
+            {
+                mLastItemAdded = null;
+                mLastItemAddedText = "Empty";
+            }
+
             Logging.LogMessage(this, "Recount used capacity:" + UsedCapacity, 2);
             MarkDirtyDelayed();
             RequestImmediateNetworkUpdate();
@@ -2290,9 +2291,7 @@ namespace Tricky.ExtraStorageHoppers
                 writer.Write((ushort) saveList.Count);
                 Logging.LogMessage(this, "Writing " + saveList.Count + " inventory stacks", 1);
                 foreach (InventoryStack inventoryStack in saveList)
-                {
                     inventoryStack.Write(writer);
-                }
 
                 writer.Write(mLastItemAdded != null);
                 if (mLastItemAdded != null)
@@ -2951,12 +2950,12 @@ namespace Tricky.ExtraStorageHoppers
                 storageStateText = string.Format(PersistentSettings.GetString("X_free_slots"), Math.Max(0, mMaximumCapacity - UsedCapacity));
 
             mTextMesh.text = GetHopperPermissionsString(Permissions) + "\n" + storageStateText + "\n" +
-                             (string.IsNullOrEmpty(mLastItemAddedText) ? string.Empty : "[" + mLastItemAdded + "]");
+                             (string.IsNullOrEmpty(mLastItemAddedText) ? "[]" : "[" + mLastItemAddedText + "]");
             mForceTextUpdate = false;
         }
 
 
-        /// <summary>
+        /// <summary> 
         /// Update the level of detail.
         /// </summary>
         private void UpdateLevelOfDetail()
