@@ -1,5 +1,4 @@
 ﻿using MadVandal.FortressCraft;
-using MadVandal.FortressCraft;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -725,6 +724,7 @@ namespace Tricky.ExtraStorageHoppers
                             return;
                         }
 
+                        Logging.LogMessage(this, "TryExtractCubes OT Items - Amount:" + amount + " Of " + shareItem.GetDisplayString(), 2);
                         if (!machineInterface.TryInsert(this, shareItem))
                         {
                             Logging.LogMessage(this, "TryInsert OT Items Failed", 2);
@@ -1422,7 +1422,7 @@ namespace Tricky.ExtraStorageHoppers
             out ushort returnedCubeType, out ushort returnedCubeValue, out int returnedAmount)
         {
             Logging.LogMessage(this, "TryExtract Start", 2);
-            if (lType == eHopperRequestType.eNone && exemplarItemId == -1 && exemplarCubeType == 0)
+            if (lType == eHopperRequestType.eNone && exemplarItemId == -1 && exemplarCubeType == 0 || minimumAmount > maximumAmount)
             {
                 returnedItem = null;
                 returnedCubeType = 0;
@@ -1443,7 +1443,7 @@ namespace Tricky.ExtraStorageHoppers
             {
                 if (!invertExemplar && lType == eHopperRequestType.eAny && !countOnly)
                 {
-                    if (exemplarItemId != -1 && mInventory.ContainsKey((uint) exemplarItemId))
+                    if (exemplarItemId != -1 && mInventory.TryGetValue((uint) exemplarItemId, out InventoryStack itemStack) && itemStack.Count >= minimumAmount)
                     {
                         returnStorageId = (uint) exemplarItemId;
                         removeStorageIdList.Add(returnStorageId);
@@ -1452,7 +1452,7 @@ namespace Tricky.ExtraStorageHoppers
                     else if (exemplarCubeType > 0)
                     {
                         uint storageId = (uint) (exemplarCubeType << 16) + exemplarCubeValue;
-                        if (mInventory.ContainsKey(storageId))
+                        if (mInventory.TryGetValue(storageId, out InventoryStack cubeStack) && cubeStack.Count >= minimumAmount)
                         {
                             Logging.LogMessage(this, "Direct Pull storage Id: " + returnStorageId, 2);
                             removeStorageIdList.Add(storageId);
@@ -1603,7 +1603,7 @@ namespace Tricky.ExtraStorageHoppers
                         }
 
                         removeStorageIdList.Add(storageId);
-                        Logging.LogMessage(this, "TryExtract - Set return storage id: " + storageId, 2);
+                        Logging.LogMessage(this, "TryExtract - Set return storage id: " + storageId+" with count of "+ inventoryStackCount, 2);
 
                         if (!trashItems && returnStorageId != uint.MaxValue)
                             break;
